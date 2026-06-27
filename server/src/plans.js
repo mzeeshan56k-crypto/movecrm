@@ -91,3 +91,17 @@ export const stripePriceFor = (key) =>
   }[key]);
 
 export const stripeConfigured = () => !!process.env.STRIPE_SECRET_KEY;
+
+// Stripe isn't available in every country (e.g. Pakistan). As an alternative, a
+// plain checkout URL per plan can be set — a Payoneer "Request a Payment" link,
+// or a Merchant-of-Record buy link (Lemon Squeezy / Paddle) that pays out to
+// Payoneer. The "Choose plan" button sends the customer there.
+export const checkoutUrlFor = (key) =>
+  ({
+    starter: process.env.CHECKOUT_URL_STARTER,
+    growth: process.env.CHECKOUT_URL_GROWTH,
+    pro: process.env.CHECKOUT_URL_PRO,
+  }[key] || null);
+
+export const paymentsConfigured = () =>
+  stripeConfigured() || !!(process.env.CHECKOUT_URL_STARTER || process.env.CHECKOUT_URL_GROWTH || process.env.CHECKOUT_URL_PRO);

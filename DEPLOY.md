@@ -36,11 +36,11 @@ A web address like `https://movecrm.vercel.app` where:
 
 1. Go to **https://vercel.com** → **Sign Up** → choose **Continue with GitHub** → Authorize
 2. Click **Add New…** → **Project**
-3. Find your **`movecrm`** repository → click **Import**
-   - Don't see it? Click "Adjust GitHub App Permissions" and allow access to `movecrm`.
+3. Find your **`spy`** repository → click **Import**
+   - Don't see it? Click "Adjust GitHub App Permissions" and allow access to `spy`.
 4. On the configure screen:
-   - **Root Directory**: leave it as the repository root (`./`) — the app is at the top level of this repo.
-   - Open **Environment Variables** and add these:
+   - **Root Directory**: click **Edit** → choose the **`crm`** folder ← important!
+   - Open **Environment Variables** and add these two:
 
    | Name | Value |
    |---|---|
@@ -50,12 +50,22 @@ A web address like `https://movecrm.vercel.app` where:
 
 5. Click **Deploy** and wait 2–3 minutes.
 
+### Point Vercel at the right branch (1 min)
+
+The CRM code lives on the branch `claude/practical-bohr-6furhk`:
+
+6. After the first deploy, go to your project → **Settings** → **Git** →
+   **Production Branch** → change it to `claude/practical-bohr-6furhk` → Save
+7. Go to **Deployments** → click the **⋯** menu on the latest one → **Redeploy**
+
+*(If the app was already deployed from `main` you'd see an empty page — this fixes it.)*
+
 ---
 
 ## Step 3 — Open it and create your account 🎉
 
 1. Click **Visit** (or open your `https://….vercel.app` address)
-2. Click **Create your company account** and fill it in
+2. Click **Create your company account**, fill it in, leave **sample data** checked
 3. You're in. **Bookmark the address** — that's your live product.
 
 ### Test the SaaS part
@@ -134,5 +144,7 @@ Push new code to the branch → Vercel redeploys automatically. Nothing to click
 ## If something goes wrong
 
 Screenshot what you see and send it to me. Most common issues:
+- **"Root Directory" not set to `crm`** → app won't build (Step 2.4)
+- **Production branch still `main`** → empty page (Step 2.6)
 - **Wrong DATABASE_URL** → signup says "Could not create account"; re-copy the
   Transaction-pooler string and make sure your real password replaced `[YOUR-PASSWORD]`.

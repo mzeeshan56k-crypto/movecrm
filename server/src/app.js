@@ -19,6 +19,7 @@ import callRoutes from './routes/calls.js';
 import websiteRoutes from './routes/websites.js';
 import reviewRoutes from './routes/reviews.js';
 import subscriptionRoutes from './routes/subscription.js';
+import cronRoutes from './routes/cron.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const app = express();
@@ -46,6 +47,7 @@ app.get('/api/health', async (req, res) => {
 });
 
 app.use('/api/public', publicRoutes);
+app.use('/api/cron', cronRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/account', requireAuth, accountRoutes);
 app.use('/api/customers', requireAuth, customerRoutes);

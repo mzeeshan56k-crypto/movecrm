@@ -1,29 +1,62 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Phone, Mail, MessageSquare, RefreshCw, FileText, CheckCircle2, Circle, X } from 'lucide-react';
+import {
+  Plus, Phone, Mail, MessageSquare, RefreshCw, FileText, CheckCircle2, Circle, X,
+  UserPlus, CalendarCheck, Truck, DollarSign, Clock, TrendingUp, Rocket, RotateCw,
+} from 'lucide-react';
+import {
+  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis,
+  CartesianGrid, Tooltip, PieChart, Pie, Cell, Legend,
+} from 'recharts';
 import { api, money, fmtDate, fmtDateTime, STATUS_META } from '../lib/api.js';
+import { useLive } from '../lib/useLive.js';
 import { StatusBadge, Empty } from '../components/ui.jsx';
 import NewLeadModal from '../components/NewLeadModal.jsx';
 
 const ACT_ICONS = { call: Phone, email: Mail, sms: MessageSquare, status_change: RefreshCw, note: FileText, system: RefreshCw };
+const ACT_COLORS = { call: '#22c55e', email: '#2563eb', sms: '#8b5cf6', status_change: '#f59e0b', note: '#64748b', system: '#64748b' };
 
-function Onboarding({ onNewLead }) {
+// Uniform compact currency for chart axes ($0, $1.2k, $3M) — no precision flips.
+const moneyFmt = new Intl.NumberFormat('en-US', { notation: 'compact', style: 'currency', currency: 'USD', maximumFractionDigits: 1 });
+const compactMoney = (n) => moneyFmt.format(Number(n) || 0);
+// KPI headline currency: no cents, so big numbers fit the narrow cards.
+const money0Fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+const money0 = (n) => money0Fmt.format(Number(n) || 0);
+
+function relativeTime(ts) {
+  if (!ts) return '';
+  const s = Math.round((Date.now() - ts) / 1000);
+  if (s < 5) return 'just now';
+  if (s < 60) return `${s}s ago`;
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  return `${Math.floor(s / 3600)}h ago`;
+}
+
+function LiveDot({ lastUpdated }) {
+  const [, tick] = useState(0);
+  useEffect(() => { const t = setInterval(() => tick((n) => n + 1), 15000); return () => clearInterval(t); }, []);
+  return (
+    <span className="row muted" style={{ gap: 6, fontSize: 12 }} title="This dashboard updates automatically">
+      <span className="live-dot" /> Live · updated {relativeTime(lastUpdated)}
+    </span>
+  );
+}
+
+function Onboarding({ onNewLead, refreshSignal }) {
   const [ob, setOb] = useState(null);
   const nav = useNavigate();
-  useEffect(() => { api('/account/onboarding').then(setOb).catch(() => {}); }, []);
+  useEffect(() => { api('/account/onboarding').then(setOb).catch(() => {}); }, [refreshSignal]);
   if (!ob || ob.dismissed || ob.complete) return null;
-
   const dismiss = () => { api('/account/onboarding/dismiss', { method: 'POST' }).catch(() => {}); setOb({ ...ob, dismissed: true }); };
   const done = ob.steps.filter((s) => s.done).length;
-
   return (
-    <div className="card" style={{ marginBottom: 20, borderColor: 'var(--primary)' }}>
-      <div className="card-head">
-        <span>🚀 Getting started — {done} of {ob.steps.length} done</span>
-        <button className="btn icon sm" title="Dismiss" onClick={dismiss}><X size={14} /></button>
+    <div className="card" style={{ marginBottom: 20, background: '#eff6ff', borderLeft: '3px solid var(--primary)' }}>
+      <div className="card-head" style={{ background: 'transparent' }}>
+        <span className="row" style={{ gap: 8 }}><Rocket size={16} color="var(--primary)" /> Getting started — {done} of {ob.steps.length} done</span>
+        <button className="btn icon sm" title="Dismiss" aria-label="Dismiss getting started" onClick={dismiss}><X size={14} /></button>
       </div>
       <div className="card-body" style={{ paddingTop: 8 }}>
-        <div style={{ height: 6, background: '#eef2f7', borderRadius: 4, marginBottom: 14 }}>
+        <div style={{ height: 6, background: 'var(--border)', borderRadius: 4, marginBottom: 14 }}>
           <div style={{ width: `${(done / ob.steps.length) * 100}%`, height: '100%', background: 'var(--primary)', borderRadius: 4, transition: 'width .3s' }} />
         </div>
         {ob.steps.map((s) => (
@@ -35,9 +68,7 @@ function Onboarding({ onNewLead }) {
                 <div className="muted" style={{ fontSize: 12 }}>{s.hint}</div>
               </div>
             </div>
-            {!s.done && (
-              <button className="btn sm" onClick={() => (s.key === 'lead' ? onNewLead() : nav(s.to))}>{s.cta}</button>
-            )}
+            {!s.done && <button className="btn sm" onClick={() => (s.key === 'lead' ? onNewLead() : nav(s.to))}>{s.cta}</button>}
           </div>
         ))}
       </div>
@@ -45,99 +76,184 @@ function Onboarding({ onNewLead }) {
   );
 }
 
+function Kpi({ icon: Icon, label, value, hint, color }) {
+  return (
+    <div className="kpi kpi-rich">
+      <div className="kpi-icon" style={{ background: `${color}1a`, color }}><Icon size={20} /></div>
+      <div>
+        <div className="label">{label}</div>
+        <div className="value" title={String(value)}>{value}</div>
+        {hint && <div className="hint">{hint}</div>}
+      </div>
+    </div>
+  );
+}
+
+function ChartTip({ active, payload, label, currencyKeys = [] }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 12px', boxShadow: 'var(--shadow)', fontSize: 13 }}>
+      <div style={{ fontWeight: 700, marginBottom: 4 }}>{label}</div>
+      {payload.map((p) => (
+        <div key={p.name} style={{ color: p.color }}>{p.name}: <b>{currencyKeys.includes(p.dataKey) ? money(p.value) : p.value}</b></div>
+      ))}
+    </div>
+  );
+}
+
+function DashboardSkeleton() {
+  return (
+    <>
+      <div className="page-head"><div><h1>Dashboard</h1><div className="sub">Your moving business at a glance</div></div></div>
+      <div className="kpi-grid">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="skeleton skeleton-kpi" />)}</div>
+      <div className="grid-3070"><div className="skeleton skeleton-chart" /><div className="skeleton skeleton-chart" /></div>
+    </>
+  );
+}
+
 export default function Dashboard() {
   const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
   const [showNew, setShowNew] = useState(false);
+  const [obSignal, setObSignal] = useState(0);
+  const fromOnboarding = useRef(false);
+  const reqId = useRef(0);
   const nav = useNavigate();
 
   const load = () => {
-    api('/reports/dashboard').then(setData).catch(console.error);
+    const id = ++reqId.current;
+    return api('/reports/dashboard')
+      .then((d) => { if (id === reqId.current) { setData(d); setError(null); setLastUpdated(Date.now()); } })
+      .catch((e) => { if (id === reqId.current) { console.error(e); setError(e); } });
   };
   useEffect(() => { load(); }, []);
+  useLive(load, []);
 
-  if (!data) return <div className="empty">Loading dashboard…</div>;
-  const { kpis, upcoming, recentActivity, openTasks, revenueByMonth, pipeline } = data;
-  const maxRev = Math.max(...revenueByMonth.map((r) => r.total), 1);
+  if (!data) {
+    if (error) {
+      return (
+        <div className="empty">
+          <p>We couldn’t load your dashboard.</p>
+          <button className="btn primary" onClick={() => { setError(null); load(); }}><RotateCw size={15} /> Retry</button>
+        </div>
+      );
+    }
+    return <DashboardSkeleton />;
+  }
+
+  const { kpis = {}, upcoming = [], recentActivity = [], openTasks = [], pipeline = [], monthlyTrend = [] } = data;
+  const pieData = pipeline.map((p) => ({ name: STATUS_META[p.status]?.label || p.status, value: p.count, color: STATUS_META[p.status]?.color || '#94a3b8' }));
+  const hasPipeline = pieData.some((d) => d.value > 0);
+
+  const onLeadCreated = (job) => {
+    if (fromOnboarding.current) {
+      setShowNew(false);
+      fromOnboarding.current = false;
+      load();
+      setObSignal((n) => n + 1); // re-check onboarding so "first lead" ticks
+    } else {
+      nav(`/jobs/${job.id}`);
+    }
+  };
 
   return (
     <>
       <div className="page-head">
         <div>
           <h1>Dashboard</h1>
-          <div className="sub">Your moving business at a glance</div>
+          <div className="sub row" style={{ gap: 12 }}>Your moving business at a glance <LiveDot lastUpdated={lastUpdated} /></div>
         </div>
-        <button className="btn primary" onClick={() => setShowNew(true)}><Plus size={16} /> New Lead</button>
+        <button className="btn primary" onClick={() => { fromOnboarding.current = false; setShowNew(true); }}><Plus size={16} /> New Lead</button>
       </div>
 
-      <Onboarding onNewLead={() => setShowNew(true)} />
+      <Onboarding refreshSignal={obSignal} onNewLead={() => { fromOnboarding.current = true; setShowNew(true); }} />
 
       <div className="kpi-grid">
-        <div className="kpi"><div className="label">New leads (month)</div><div className="value">{kpis.newLeads}</div></div>
-        <div className="kpi"><div className="label">Booked (month)</div><div className="value">{kpis.bookedCount}</div><div className="hint">{money(kpis.bookedValue)} value</div></div>
-        <div className="kpi"><div className="label">Moves today</div><div className="value">{kpis.movesToday}</div></div>
-        <div className="kpi"><div className="label">Collected (month)</div><div className="value">{money(kpis.collected)}</div></div>
-        <div className="kpi"><div className="label">Outstanding</div><div className="value">{money(kpis.outstanding)}</div></div>
-        <div className="kpi"><div className="label">Conversion (90d)</div><div className="value">{kpis.conversionRate}%</div></div>
+        <Kpi icon={UserPlus} label="New leads (month)" value={kpis.newLeads ?? 0} color="#6366f1" />
+        <Kpi icon={CalendarCheck} label="Booked (month)" value={kpis.bookedCount ?? 0} hint={`${money0(kpis.bookedValue)} value`} color="#22c55e" />
+        <Kpi icon={Truck} label="Moves today" value={kpis.movesToday ?? 0} color="#f59e0b" />
+        <Kpi icon={DollarSign} label="Collected (month)" value={money0(kpis.collected)} color="#10b981" />
+        <Kpi icon={Clock} label="Outstanding" value={money0(kpis.outstanding)} color="#ef4444" />
+        <Kpi icon={TrendingUp} label="Conversion (90d)" value={`${kpis.conversionRate ?? 0}%`} color="#0ea5e9" />
       </div>
 
-      <div className="grid-3070">
-        <div>
-          <div className="card">
-            <div className="card-head">Upcoming moves</div>
-            {upcoming.length === 0 ? <Empty>No upcoming moves scheduled.</Empty> : (
-              <table className="data">
-                <thead><tr><th>Date</th><th>Job</th><th>Customer</th><th>Route</th><th>Status</th><th>Est.</th></tr></thead>
-                <tbody>
-                  {upcoming.map((j) => (
-                    <tr key={j.id} className="clickable" onClick={() => nav(`/jobs/${j.id}`)}>
-                      <td>{fmtDate(j.move_date)}<div className="muted" style={{ fontSize: 12 }}>{j.arrival_window}</div></td>
-                      <td>{j.job_number}</td>
-                      <td>{j.first_name} {j.last_name}</td>
-                      <td className="muted">{j.origin_city} → {j.dest_city}</td>
-                      <td><StatusBadge status={j.status} /></td>
-                      <td>{money(j.estimated_total)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+      <div className="grid-3070 dash-charts">
+        <div className="card">
+          <div className="card-head">Leads, bookings & revenue — last 6 months</div>
+          <div className="card-body">
+            <ResponsiveContainer width="100%" height={300}>
+              <ComposedChart data={monthlyTrend} margin={{ top: 10, right: 8, left: -6, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eef2f7" />
+                <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="l" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <YAxis yAxisId="r" orientation="right" tickFormatter={compactMoney} tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip content={<ChartTip currencyKeys={['revenue']} />} />
+                <Legend wrapperStyle={{ fontSize: 12 }} verticalAlign="top" align="right" />
+                <Bar yAxisId="l" dataKey="leads" name="Leads" fill="#c7d2fe" radius={[4, 4, 0, 0]} barSize={18} />
+                <Bar yAxisId="l" dataKey="booked" name="Booked" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={18} />
+                <Line yAxisId="r" type="monotone" dataKey="revenue" name="Revenue ($)" stroke="#10b981" strokeWidth={3} dot={{ r: 3 }} />
+              </ComposedChart>
+            </ResponsiveContainer>
           </div>
+        </div>
 
-          <div className="card mt">
-            <div className="card-head">Revenue collected — last 6 months</div>
-            <div className="card-body">
-              {revenueByMonth.length === 0 ? <Empty>No payments recorded yet.</Empty> : (
-                <div className="bar-chart">
-                  {revenueByMonth.map((r) => (
-                    <div className="bar-wrap" key={r.month}>
-                      <div className="bar-value">{money(r.total)}</div>
-                      <div className="bar" style={{ height: `${Math.max((r.total / maxRev) * 100, 2)}%` }} />
-                      <div className="bar-label">{r.month.slice(5)}/{r.month.slice(2, 4)}</div>
+        <div className="card">
+          <div className="card-head">Pipeline breakdown</div>
+          <div className="card-body">
+            {!hasPipeline ? <Empty>No active pipeline yet.</Empty> : (
+              <>
+                <div className="pie-wrap">
+                  <ResponsiveContainer width="100%" height={210}>
+                    <PieChart>
+                      <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={2}>
+                        {pieData.map((d) => <Cell key={d.name} fill={d.color} />)}
+                      </Pie>
+                      <Tooltip content={<ChartTip />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div>
+                  {pipeline.filter((p) => p.count > 0).map((p) => (
+                    <div className="row spread" key={p.status} style={{ padding: '5px 0' }}>
+                      <StatusBadge status={p.status} />
+                      <div><b>{p.count}</b> <span className="muted">· {money(p.value)}</span></div>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
+        </div>
+      </div>
+
+      <div className="grid-3070 mt">
+        <div className="card">
+          <div className="card-head">Upcoming moves</div>
+          {upcoming.length === 0 ? <Empty>No upcoming moves scheduled.</Empty> : (
+            <table className="data">
+              <thead><tr><th>Date</th><th>Job</th><th>Customer</th><th>Route</th><th>Status</th><th>Est.</th></tr></thead>
+              <tbody>
+                {upcoming.map((j) => (
+                  <tr key={j.id} className="clickable" onClick={() => nav(`/jobs/${j.id}`)}>
+                    <td>{fmtDate(j.move_date)}{j.arrival_window && <div className="muted" style={{ fontSize: 12 }}>{j.arrival_window}</div>}</td>
+                    <td>{j.job_number}</td>
+                    <td>{j.first_name} {j.last_name}</td>
+                    <td className="muted">{j.origin_city} → {j.dest_city}</td>
+                    <td><StatusBadge status={j.status} /></td>
+                    <td>{money(j.estimated_total)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         <div>
           <div className="card">
-            <div className="card-head">Pipeline</div>
-            <div className="card-body">
-              {pipeline.map((p) => (
-                <div className="row spread" key={p.status} style={{ padding: '7px 0' }}>
-                  <StatusBadge status={p.status} />
-                  <div><b>{p.count}</b> <span className="muted">· {money(p.value)}</span></div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="card mt">
             <div className="card-head">Open tasks</div>
             <div className="card-body">
-              {openTasks.length === 0 ? <span className="muted">All caught up 🎉</span> : openTasks.map((t) => (
+              {openTasks.length === 0 ? <span className="row muted" style={{ gap: 6 }}><CheckCircle2 size={14} color="#22c55e" /> All caught up</span> : openTasks.map((t) => (
                 <div key={t.id} style={{ padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
                   <div style={{ fontWeight: 600 }}>{t.title}</div>
                   <div className="muted" style={{ fontSize: 12 }}>
@@ -151,11 +267,12 @@ export default function Dashboard() {
           <div className="card mt">
             <div className="card-head">Recent activity</div>
             <div className="card-body">
-              {recentActivity.map((a) => {
+              {recentActivity.length === 0 ? <span className="muted">Nothing yet.</span> : recentActivity.map((a) => {
                 const Icon = ACT_ICONS[a.type] || FileText;
+                const c = ACT_COLORS[a.type] || '#64748b';
                 return (
                   <div className="activity-item" key={a.id}>
-                    <div className="activity-icon"><Icon size={14} /></div>
+                    <div className="activity-icon" style={{ background: `${c}1a`, color: c }}><Icon size={14} /></div>
                     <div>
                       <div style={{ fontWeight: 600 }}>{a.subject || a.type}</div>
                       <div className="muted" style={{ fontSize: 12 }}>
@@ -170,9 +287,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {showNew && (
-        <NewLeadModal onClose={() => setShowNew(false)} onCreated={(job) => nav(`/jobs/${job.id}`)} />
-      )}
+      {showNew && <NewLeadModal onClose={() => setShowNew(false)} onCreated={onLeadCreated} />}
     </>
   );
 }

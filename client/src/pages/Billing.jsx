@@ -1,8 +1,54 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Check, Crown, Clock } from 'lucide-react';
+import { Check, Crown, Clock, Shield } from 'lucide-react';
 import { api, money } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
+
+const PLAN_OPTIONS = ['trial', 'starter', 'growth', 'pro', 'enterprise', 'owner'];
+
+function OwnerAdmin() {
+  const [orgs, setOrgs] = useState(null);
+  const [saving, setSaving] = useState(null);
+  const load = () => api('/subscription/orgs').then(setOrgs).catch(() => setOrgs([]));
+  useEffect(() => { load(); }, []);
+  if (!orgs) return null;
+
+  const setPlan = async (id, plan) => {
+    setSaving(id);
+    try { await api(`/subscription/orgs/${id}/plan`, { method: 'POST', body: { plan } }); await load(); }
+    catch (e) { alert(e.message); }
+    finally { setSaving(null); }
+  };
+
+  return (
+    <div className="card mt">
+      <div className="card-head"><span className="row" style={{ gap: 8 }}><Shield size={16} /> Owner admin — all companies ({orgs.length})</span></div>
+      <table className="data">
+        <thead><tr><th>Company</th><th>Admin email</th><th>Sites</th><th>Users</th><th>Plan</th></tr></thead>
+        <tbody>
+          {orgs.map((o) => (
+            <tr key={o.id}>
+              <td><b>{o.name}</b></td>
+              <td className="muted">{o.admin_email}</td>
+              <td>{o.websites}</td>
+              <td>{o.users}</td>
+              <td>
+                <select value={o.plan} disabled={saving === o.id} onChange={(e) => setPlan(o.id, e.target.value)} style={{ width: 140 }}>
+                  {PLAN_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="card-body" style={{ borderTop: '1px solid var(--border)' }}>
+        <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+          After a customer pays (Payoneer / Lemon Squeezy / Paddle), set their plan here to activate it instantly.
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export default function Billing() {
   const { user } = useAuth();
@@ -25,7 +71,12 @@ export default function Billing() {
     setNotice('');
     try {
       const res = await api('/subscription/subscribe', { method: 'POST', body: { plan } });
-      if (res.url) window.location.href = res.url;
+      if (res.url && res.external) {
+        window.open(res.url, '_blank', 'noopener');
+        setNotice('Opened secure checkout in a new tab. Once your payment is confirmed, your plan is activated — usually within a few hours.');
+      } else if (res.url) {
+        window.location.href = res.url;
+      }
     } catch (e) {
       setNotice(e.message);
     } finally {
@@ -55,7 +106,7 @@ export default function Billing() {
             {data.current.renews_at ? ` · renews ${new Date(data.current.renews_at).toLocaleDateString()}` : ''}
           </div>
         </div>
-        {onPaid && data.billing_enabled && <button className="btn" onClick={manage}>Manage subscription</button>}
+        {onPaid && data.stripe_enabled && <button className="btn" onClick={manage}>Manage subscription</button>}
       </div>
 
       {currentKey === 'owner' && (
@@ -128,12 +179,14 @@ export default function Billing() {
         })}
       </div>
 
-      {!data.billing_enabled && currentKey !== 'owner' && (
+      {!data.payments_enabled && currentKey !== 'owner' && (
         <p className="muted mt" style={{ fontSize: 13 }}>
-          Note: card payments aren’t switched on yet, so plan buttons are inactive. Once the platform owner
-          connects Stripe, these buttons take customers straight to checkout.
+          Note: online payment isn’t connected yet. Choosing a plan will ask you to contact us to activate it —
+          we’ll switch on self-serve checkout soon.
         </p>
       )}
+
+      {data.is_owner && <OwnerAdmin />}
     </>
   );
 }

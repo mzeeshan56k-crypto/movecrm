@@ -2,15 +2,19 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Trash2, Save } from 'lucide-react';
 import { api } from '../lib/api.js';
-import { Field, Modal } from '../components/ui.jsx';
+import { Field, Modal, Empty } from '../components/ui.jsx';
 import { useAuth } from '../lib/auth.jsx';
 
 const TABS = ['Company', 'Lead Capture & Phone', 'Lead Sources', 'Move Sizes', 'Services', 'Crew', 'Trucks', 'Users', 'Email Templates'];
 
 export default function Settings() {
-  const [tab, setTab] = useState('Company');
+  // Remember the active tab in the URL hash so refresh / deep-links keep it.
+  const hashTab = decodeURIComponent((window.location.hash || '').replace('#', ''));
+  const [tab, setTab] = useState(TABS.includes(hashTab) ? hashTab : 'Company');
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+
+  const selectTab = (t) => { setTab(t); window.location.hash = encodeURIComponent(t); };
 
   return (
     <>
@@ -21,7 +25,7 @@ export default function Settings() {
         </div>
       </div>
       <div className="tabs">
-        {TABS.map((t) => <button key={t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>{t}</button>)}
+        {TABS.map((t) => <button key={t} className={tab === t ? 'active' : ''} onClick={() => selectTab(t)}>{t}</button>)}
       </div>
 
       {tab === 'Company' && <Company isAdmin={isAdmin} />}
@@ -176,6 +180,37 @@ function LeadCapture() {
           </p>
         </div>
       </div>
+
+      <div className="card mt">
+        <div className="card-head">🔌 Connect your ad & review channels</div>
+        <div className="card-body">
+          <p className="muted" style={{ marginTop: 0 }}>
+            Each channel below has its own webhook URL. Paste it into that platform's lead delivery
+            settings and every lead flows straight into your pipeline, tagged with the right source —
+            no manual entry. (These are live endpoints, not placeholders.)
+          </p>
+          {[
+            { name: 'Google Ads', src: 'Google Ads', how: 'Google Ads → Lead form extension → "Webhook integration" → paste URL + your key' },
+            { name: 'Yelp', src: 'Yelp', how: 'Yelp Lead Center / partner integration → webhook destination' },
+            { name: 'Facebook / Instagram', src: 'Facebook', how: 'Connect via Zapier or Meta Lead Ads → webhook' },
+            { name: 'Zapier / Make', src: 'Zapier', how: 'Use a "Webhooks → POST" action with fields name, phone, email' },
+          ].map((ch) => {
+            const url = `${origin}/api/public/lead/${voiceKey}?source=${encodeURIComponent(ch.src)}`;
+            return (
+              <div key={ch.name} style={{ padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ fontWeight: 700 }}>{ch.name}</div>
+                <div className="muted" style={{ fontSize: 12, marginBottom: 4 }}>{ch.how}</div>
+                <div className="row spread"><Code>{url}</Code><CopyBtn label={`int-${ch.src}`} text={url} /></div>
+              </div>
+            );
+          })}
+          <p className="muted" style={{ fontSize: 12, marginBottom: 0, marginTop: 10 }}>
+            Send a POST with at least a <code>name</code> and <code>phone</code> (or <code>email</code>).
+            Optional fields: <code>move_date</code>, <code>move_size</code>, <code>origin_city</code>,
+            <code> dest_city</code>, <code>message</code>.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -235,13 +270,15 @@ function DangerZone() {
   );
 }
 
+const MONEY_KEYS = new Set(['rate', 'hourly_wage']);
+
 function SimpleCrud({ path, fields, isAdmin }) {
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState(null);
   const [editing, setEditing] = useState(null); // null | {} (new) | row
   const [error, setError] = useState('');
 
   const load = () => api(path).then(setRows).catch(console.error);
-  useEffect(() => { load(); }, [path]);
+  useEffect(() => { setRows(null); load(); }, [path]);
 
   const save = async () => {
     setError('');
@@ -268,34 +305,43 @@ function SimpleCrud({ path, fields, isAdmin }) {
     } catch (e) { alert(e.message); }
   };
 
+  const cell = (f, r) => {
+    if (f.type === 'checkbox') return r[f.key] ? <span style={{ color: '#22c55e', fontWeight: 700 }}>✓</span> : <span className="muted">—</span>;
+    if (f.key === 'name') return <b>{r[f.key]}</b>;
+    if (MONEY_KEYS.has(f.key)) return `$${Number(r[f.key] || 0).toLocaleString('en-US')}`;
+    return String(r[f.key] ?? '—');
+  };
+
   return (
     <div className="card">
       <div className="card-head">
-        {rows.length} items
+        {rows === null ? 'Loading…' : `${rows.length} item${rows.length === 1 ? '' : 's'}`}
         {isAdmin && <button className="btn primary sm" onClick={() => setEditing({ active: 1, status: 'available', role: 'mover', rate_type: 'flat' })}><Plus size={14} /> Add</button>}
       </div>
-      <table className="data">
-        <thead>
-          <tr>{fields.map((f) => <th key={f.key}>{f.label}</th>)}{isAdmin && <th />}</tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.id}>
-              {fields.map((f) => (
-                <td key={f.key}>
-                  {f.type === 'checkbox' ? (r[f.key] ? '✓' : '—') : f.key === 'name' ? <b>{r[f.key]}</b> : String(r[f.key] ?? '—')}
-                </td>
-              ))}
-              {isAdmin && (
-                <td style={{ textAlign: 'right' }}>
-                  <button className="btn sm" onClick={() => setEditing(r)}>Edit</button>{' '}
-                  <button className="btn icon sm danger" onClick={() => remove(r)}><Trash2 size={14} /></button>
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {rows === null ? (
+        <div className="card-body">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="skeleton" style={{ height: 18, marginBottom: 10 }} />)}</div>
+      ) : rows.length === 0 ? (
+        <Empty>{isAdmin ? 'Nothing here yet — click “Add” to create one.' : 'Nothing configured yet.'}</Empty>
+      ) : (
+        <table className="data">
+          <thead>
+            <tr>{fields.map((f) => <th key={f.key}>{f.label}</th>)}{isAdmin && <th />}</tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.id}>
+                {fields.map((f) => <td key={f.key}>{cell(f, r)}</td>)}
+                {isAdmin && (
+                  <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    <button className="btn sm" onClick={() => setEditing(r)}>Edit</button>{' '}
+                    <button className="btn icon sm danger" onClick={() => remove(r)}><Trash2 size={14} /></button>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       {editing && (
         <Modal title={editing.id ? 'Edit' : 'Add'} onClose={() => setEditing(null)} footer={
@@ -325,7 +371,7 @@ function SimpleCrud({ path, fields, isAdmin }) {
 }
 
 function UsersTab({ isAdmin }) {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState(null);
   const [editing, setEditing] = useState(null);
   const [error, setError] = useState('');
 
@@ -350,20 +396,24 @@ function UsersTab({ isAdmin }) {
         Team members
         {isAdmin && <button className="btn primary sm" onClick={() => setEditing({ role: 'salesperson', active: 1 })}><Plus size={14} /> Add user</button>}
       </div>
-      <table className="data">
-        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th>{isAdmin && <th />}</tr></thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.id}>
-              <td><b>{u.name}</b></td>
-              <td className="muted">{u.email}</td>
-              <td style={{ textTransform: 'capitalize' }}>{u.role}</td>
-              <td>{u.active ? 'Active' : 'Disabled'}</td>
-              {isAdmin && <td style={{ textAlign: 'right' }}><button className="btn sm" onClick={() => setEditing({ ...u, password: '' })}>Edit</button></td>}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {users === null ? (
+        <div className="card-body">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="skeleton" style={{ height: 18, marginBottom: 10 }} />)}</div>
+      ) : (
+        <table className="data">
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th>{isAdmin && <th />}</tr></thead>
+          <tbody>
+            {users.map((u) => (
+              <tr key={u.id}>
+                <td><b>{u.name}</b></td>
+                <td className="muted">{u.email}</td>
+                <td style={{ textTransform: 'capitalize' }}>{u.role}</td>
+                <td><span className="badge" style={{ background: u.active ? '#22c55e' : '#9ca3af' }}>{u.active ? 'Active' : 'Disabled'}</span></td>
+                {isAdmin && <td style={{ textAlign: 'right' }}><button className="btn sm" onClick={() => setEditing({ ...u, password: '' })}>Edit</button></td>}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       {editing && (
         <Modal title={editing.id ? 'Edit user' : 'Add user'} onClose={() => setEditing(null)} footer={
@@ -398,7 +448,7 @@ function UsersTab({ isAdmin }) {
 }
 
 function Templates({ isAdmin }) {
-  const [templates, setTemplates] = useState([]);
+  const [templates, setTemplates] = useState(null);
   const [editing, setEditing] = useState(null);
   const [error, setError] = useState('');
 
@@ -426,7 +476,9 @@ function Templates({ isAdmin }) {
         <p className="muted" style={{ marginTop: 0 }}>
           Use placeholders like {'{{first_name}}'}, {'{{move_date}}'}, {'{{estimated_total}}'}, {'{{job_number}}'}, {'{{company_name}}'} — fill them in when sending.
         </p>
-        {templates.map((t) => (
+        {templates === null ? <div className="skeleton" style={{ height: 80 }} />
+          : templates.length === 0 ? <Empty>No templates yet.</Empty>
+          : templates.map((t) => (
           <div key={t.id} className="card" style={{ marginBottom: 10 }}>
             <div className="card-head">
               {t.name}

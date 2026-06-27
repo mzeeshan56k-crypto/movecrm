@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { q, one } from '../db.js';
+import { q, one, run } from '../db.js';
 
 const router = Router();
 
@@ -58,9 +58,25 @@ router.get('/dashboard', async (req, res) => {
     SELECT status, COUNT(*)::int AS count, COALESCE(SUM(estimated_total),0) AS value
     FROM jobs WHERE org_id=$1 AND status IN ('lead','opportunity','booked','in_progress') GROUP BY status`, [org]);
 
+  // 6-month trend: leads created, jobs booked, and revenue booked per month.
+  const monthlyTrend = await q(`
+    SELECT to_char(d.month, 'Mon') AS label, to_char(d.month, 'YYYY-MM') AS ym,
+      COALESCE(j.leads, 0)::int AS leads,
+      COALESCE(j.booked, 0)::int AS booked,
+      COALESCE(j.revenue, 0) AS revenue
+    FROM generate_series(date_trunc('month', now()) - interval '5 months', date_trunc('month', now()), interval '1 month') AS d(month)
+    LEFT JOIN (
+      SELECT date_trunc('month', created_at) AS m,
+        COUNT(*) AS leads,
+        SUM(CASE WHEN status IN ('booked','in_progress','completed') THEN 1 ELSE 0 END) AS booked,
+        SUM(CASE WHEN status IN ('booked','in_progress','completed') THEN estimated_total ELSE 0 END) AS revenue
+      FROM jobs WHERE org_id=$1 GROUP BY m
+    ) j ON j.m = d.month
+    ORDER BY d.month`, [org]);
+
   res.json({
     kpis: { newLeads, bookedCount: booked.n, bookedValue: booked.value, movesToday, collected, outstanding, conversionRate },
-    upcoming, recentActivity, openTasks, revenueByMonth, pipeline,
+    upcoming, recentActivity, openTasks, revenueByMonth, pipeline, monthlyTrend,
   });
 });
 
@@ -179,6 +195,29 @@ router.get('/analytics', async (req, res) => {
   `, [org, String(days)]);
 
   res.json({ days, compare, funnel, byType, busiestDays, topCustomers, callStats });
+});
+
+// --- Scheduled email reports ---
+router.get('/schedule', async (req, res) => {
+  const rows = await q("SELECT key, value FROM settings WHERE org_id = $1 AND key LIKE 'report_%'", [req.orgId]);
+  const s = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+  res.json({
+    report_frequency: s.report_frequency || 'off',
+    report_recipients: s.report_recipients || '',
+  });
+});
+
+router.put('/schedule', async (req, res) => {
+  const allowed = ['report_frequency', 'report_recipients'];
+  for (const [k, v] of Object.entries(req.body || {})) {
+    if (!allowed.includes(k)) continue;
+    await run(
+      `INSERT INTO settings (org_id, key, value) VALUES ($1,$2,$3)
+       ON CONFLICT (org_id, key) DO UPDATE SET value = EXCLUDED.value`,
+      [req.orgId, k, String(v)]
+    );
+  }
+  res.json({ ok: true });
 });
 
 export default router;

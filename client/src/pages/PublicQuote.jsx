@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Truck, CheckCircle } from 'lucide-react';
+import { Truck, CheckCircle, ArrowLeft } from 'lucide-react';
+
+const SERVICE_TYPES = [
+  { value: 'local', label: 'Local Move' },
+  { value: 'long_distance', label: 'Long Distance' },
+  { value: 'commercial', label: 'Commercial / Office' },
+  { value: 'storage', label: 'Storage' },
+  { value: 'labor_only', label: 'Labor Only' },
+];
 
 // Public quote-request form. No login — this is what a moving company's website
 // visitors see. Submissions become leads in that company's CRM automatically.
@@ -11,9 +19,10 @@ export default function PublicQuote() {
   const [done, setDone] = useState(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [step, setStep] = useState(1);
   const [f, setF] = useState({
-    first_name: '', last_name: '', email: '', phone: '',
-    move_date: '', move_size: '', origin_city: '', dest_city: '', message: '',
+    origin_city: '', dest_city: '', move_date: '', type: '', move_size: '',
+    first_name: '', last_name: '', phone: '', email: '', message: '',
   });
   const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
 
@@ -24,8 +33,10 @@ export default function PublicQuote() {
       .catch(() => setNotFound(true));
   }, [publicKey]);
 
-  const submit = async (e) => {
-    e.preventDefault();
+  const step1Valid = f.origin_city && f.dest_city && f.move_date;
+  const step2Valid = f.first_name && f.phone;
+
+  const submit = async () => {
     setBusy(true);
     setError('');
     try {
@@ -43,51 +54,82 @@ export default function PublicQuote() {
     }
   };
 
-  if (notFound) return <div className="login-page"><div className="login-card">This quote link is not valid.</div></div>;
-  if (!org) return <div className="login-page"><div className="login-card">Loading…</div></div>;
+  if (notFound) return <div className="quote-page"><div className="quote-card">This quote link is not valid.</div></div>;
+  if (!org) return <div className="quote-page"><div className="quote-card">Loading…</div></div>;
 
   if (done) {
     return (
-      <div className="login-page">
-        <div className="login-card" style={{ textAlign: 'center' }}>
-          <CheckCircle size={48} color="#22c55e" style={{ margin: '0 auto 12px' }} />
-          <h2>Request received!</h2>
+      <div className="quote-page">
+        <div className="quote-card" style={{ textAlign: 'center' }}>
+          <CheckCircle size={52} color="#22c55e" style={{ margin: '0 auto 14px' }} />
+          <h2 style={{ fontSize: 22 }}>Request received!</h2>
           <p className="muted">{done.message}</p>
-          <p className="muted" style={{ fontSize: 13 }}>Your reference number: <b>{done.reference}</b></p>
+          <p className="muted" style={{ fontSize: 13 }}>Reference number: <b>{done.reference}</b></p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="login-page" style={{ padding: '40px 16px', alignItems: 'flex-start' }}>
-      <form className="login-card" style={{ width: 520 }} onSubmit={submit}>
-        <div className="logo"><Truck size={26} color="#2563eb" /> {org.company_name}</div>
-        <p className="muted" style={{ marginTop: 0 }}>Get your free moving quote — we'll contact you within one business day.</p>
-
-        <div className="form-grid">
-          <label className="field"><span>First name *</span><input value={f.first_name} onChange={set('first_name')} required /></label>
-          <label className="field"><span>Last name</span><input value={f.last_name} onChange={set('last_name')} /></label>
-          <label className="field"><span>Phone *</span><input value={f.phone} onChange={set('phone')} required /></label>
-          <label className="field"><span>Email</span><input type="email" value={f.email} onChange={set('email')} /></label>
-          <label className="field"><span>Preferred move date</span><input type="date" value={f.move_date} onChange={set('move_date')} /></label>
-          <label className="field">
-            <span>Home size</span>
-            <select value={f.move_size} onChange={set('move_size')}>
-              <option value="">Select…</option>
-              {org.move_sizes.map((m) => <option key={m.id} value={m.name}>{m.name}</option>)}
-            </select>
-          </label>
-          <label className="field"><span>Moving from (city)</span><input value={f.origin_city} onChange={set('origin_city')} /></label>
-          <label className="field"><span>Moving to (city)</span><input value={f.dest_city} onChange={set('dest_city')} /></label>
+    <div className="quote-page">
+      <div className="quote-card">
+        <div className="quote-head">
+          <div className="quote-logo"><Truck size={24} /> {org.company_name}</div>
+          <h2>Get a Free Estimate</h2>
+          <p>Get a customized moving quote with no obligation — request your free estimate today!</p>
         </div>
-        <label className="field"><span>Anything else we should know?</span><textarea rows={3} value={f.message} onChange={set('message')} /></label>
 
-        {error && <div className="error-text">{error}</div>}
-        <button className="btn primary" style={{ width: '100%', justifyContent: 'center', marginTop: 8 }} disabled={busy}>
-          {busy ? 'Sending…' : 'Request my free quote'}
-        </button>
-      </form>
+        <div className="quote-steps">
+          <div className="quote-progress"><div style={{ width: step === 1 ? '50%' : '100%' }} /></div>
+          <span>STEP {step} OF 2</span>
+        </div>
+
+        {step === 1 ? (
+          <>
+            <div className="quote-grid">
+              <label className="field"><span>Moving From *</span><input value={f.origin_city} onChange={set('origin_city')} placeholder="City or ZIP" /></label>
+              <label className="field"><span>Moving To *</span><input value={f.dest_city} onChange={set('dest_city')} placeholder="City or ZIP" /></label>
+            </div>
+            <label className="field"><span>Move Date *</span><input type="date" value={f.move_date} onChange={set('move_date')} /></label>
+            <div className="quote-grid">
+              <label className="field">
+                <span>Service Type</span>
+                <select value={f.type} onChange={set('type')}>
+                  <option value="">Select…</option>
+                  {SERVICE_TYPES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                </select>
+              </label>
+              <label className="field">
+                <span>Moving Size</span>
+                <select value={f.move_size} onChange={set('move_size')}>
+                  <option value="">Select…</option>
+                  {org.move_sizes.map((m) => <option key={m.id} value={m.name}>{m.name}</option>)}
+                </select>
+              </label>
+            </div>
+            <button className="quote-btn" disabled={!step1Valid} onClick={() => setStep(2)}>Next</button>
+          </>
+        ) : (
+          <>
+            <div className="quote-grid">
+              <label className="field"><span>First Name *</span><input value={f.first_name} onChange={set('first_name')} autoFocus /></label>
+              <label className="field"><span>Last Name</span><input value={f.last_name} onChange={set('last_name')} /></label>
+            </div>
+            <div className="quote-grid">
+              <label className="field"><span>Phone *</span><input value={f.phone} onChange={set('phone')} /></label>
+              <label className="field"><span>Email</span><input type="email" value={f.email} onChange={set('email')} /></label>
+            </div>
+            <label className="field"><span>Anything else we should know?</span><textarea rows={3} value={f.message} onChange={set('message')} /></label>
+            {error && <div className="error-text">{error}</div>}
+            <div className="quote-actions">
+              <button className="quote-btn ghost" onClick={() => setStep(1)}><ArrowLeft size={16} /> Back</button>
+              <button className="quote-btn" disabled={!step2Valid || busy} onClick={submit}>
+                {busy ? 'Sending…' : 'Get My Free Quote'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

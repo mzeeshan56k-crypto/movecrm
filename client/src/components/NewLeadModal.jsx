@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react';
 import { api, JOB_TYPES } from '../lib/api.js';
 import { Modal, Field } from './ui.jsx';
 
-export default function NewLeadModal({ onClose, onCreated }) {
+export default function NewLeadModal({ onClose, onCreated, initialDate = '' }) {
   const [moveSizes, setMoveSizes] = useState([]);
   const [leadSources, setLeadSources] = useState([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [f, setF] = useState({
     first_name: '', last_name: '', email: '', phone: '',
-    type: 'local', move_date: '', move_size_id: '', lead_source_id: '',
+    type: 'local', move_date: initialDate, move_size_id: '', lead_source_id: '',
     origin_address: '', origin_city: '', origin_state: '', origin_zip: '',
     dest_address: '', dest_city: '', dest_state: '', dest_zip: '',
     notes: '',

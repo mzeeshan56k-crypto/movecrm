@@ -66,31 +66,24 @@ Requires a local PostgreSQL database.
 export DATABASE_URL="postgresql://postgres@localhost:5432/movecrm"
 
 # 1. Backend
-cd server
+cd crm/server
 npm install
 npm run migrate       # creates the tables
-npm run seed          # optional: a demo company you can log into immediately
 npm start             # http://localhost:4000
 
 # 2. Frontend (dev mode, another terminal)
-cd client
+cd crm/client
 npm install
 npm run dev           # http://localhost:5173 (proxies /api to :4000)
 ```
 
-Then open the app and **click "Create your company account"** to sign up — or use the
-demo company the seed created:
-
-| Email | Password | Role |
-|---|---|---|
-| admin@movecrm.test | admin123 | Admin |
-| sara@movecrm.test | sales123 | Salesperson |
-| dan@movecrm.test | dispatch123 | Dispatcher |
+Then open the app and **click "Create your company account"** to sign up. There is no
+demo data — every workspace starts clean with only its default config.
 
 **Production build** (single server serves API + frontend):
 
 ```bash
-cd client && npm install && npm run build
+cd crm/client && npm install && npm run build
 cd ../server && npm install && npm run migrate && npm start
 ```
 
@@ -100,20 +93,19 @@ Environment variables:
 
 - `DATABASE_URL` — PostgreSQL connection string **(required)**
 - `JWT_SECRET` — secret for signing logins **(set this in production)**
+- `OWNER_EMAIL` — this email gets free unlimited owner access
 - `PORT` — server port (default `4000`)
-- `FORCE_SEED=1 npm run seed` — recreate the demo company
 
 ## Architecture
 
 ```
-movecrm/  (repository root)
+crm/
 ├── server/                 # Express REST API (PostgreSQL)
 │   └── src/
 │       ├── index.js        # app entry, serves client/dist in production
 │       ├── db.js           # pg pool + query helpers
 │       ├── migrate.js      # multi-tenant schema (run on deploy)
-│       ├── provision.js    # per-company default config + sample data
-│       ├── seed.js         # optional demo company
+│       ├── provision.js    # per-company default config (no demo data)
 │       ├── auth.js         # JWT (carries org_id) + role middleware
 │       └── routes/         # auth (signup/login), account, jobs, customers,
 │                           # resources, billing, reports, settings

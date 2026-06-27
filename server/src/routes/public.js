@@ -37,7 +37,9 @@ router.post('/lead/:key', async (req, res) => {
   if (!firstName) return res.status(400).json({ error: 'Name is required' });
   if (!b.phone && !b.email) return res.status(400).json({ error: 'Phone or email is required' });
 
-  const sourceName = (b.source || 'Website Form').toString();
+  // The lead source can come from the body or the ?source= query param, so each
+  // integration (Google Ads, Yelp, Facebook, Zapier…) gets a tagged webhook URL.
+  const sourceName = (b.source || req.query.source || 'Website Form').toString();
   try {
     const jobNumber = await tx(async (client) => {
       const source = (await client.query(

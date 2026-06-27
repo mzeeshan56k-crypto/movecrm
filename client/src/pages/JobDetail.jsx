@@ -6,26 +6,52 @@ import { StatusBadge, Field, Modal, Empty } from '../components/ui.jsx';
 
 const TABS = ['Overview', 'Estimate', 'Inventory', 'Dispatch', 'Billing', 'Activity'];
 
+function JobDetailSkeleton() {
+  return (
+    <>
+      <div className="page-head"><div style={{ flex: 1 }}>
+        <div className="skeleton" style={{ height: 14, width: 120, marginBottom: 10 }} />
+        <div className="skeleton" style={{ height: 26, width: 320, marginBottom: 8 }} />
+        <div className="skeleton" style={{ height: 14, width: 240 }} />
+      </div></div>
+      <div className="skeleton" style={{ height: 40, marginBottom: 18 }} />
+      <div className="grid-2"><div className="skeleton" style={{ height: 320 }} /><div className="skeleton" style={{ height: 220 }} /></div>
+    </>
+  );
+}
+
 export default function JobDetail() {
   const { id } = useParams();
   const nav = useNavigate();
   const [job, setJob] = useState(null);
   const [tab, setTab] = useState('Overview');
   const [error, setError] = useState('');
+  const [lostOpen, setLostOpen] = useState(false);
+  const [lostReason, setLostReason] = useState('');
 
   const load = () => api(`/jobs/${id}`).then(setJob).catch((e) => setError(e.message));
   useEffect(() => { load(); }, [id]);
 
   if (error) return <div className="empty">{error}</div>;
-  if (!job) return <div className="empty">Loading…</div>;
+  if (!job) return <JobDetailSkeleton />;
 
-  const setStatus = async (status) => {
-    let lost_reason;
-    if (status === 'lost') {
-      lost_reason = window.prompt('Reason for losing this job?') || '';
-    }
+  const applyStatus = async (status, lost_reason) => {
     const updated = await api(`/jobs/${id}`, { method: 'PUT', body: { status, ...(lost_reason !== undefined ? { lost_reason } : {}) } });
     setJob(updated);
+  };
+  const onStatusChange = (status) => {
+    if (status === 'lost') { setLostReason(''); setLostOpen(true); return; }
+    applyStatus(status);
+  };
+
+  const balance = job.invoices.filter((i) => i.status !== 'void').reduce((s, i) => s + i.total, 0)
+    - job.payments.reduce((s, p) => s + p.amount, 0);
+  const TAB_COUNTS = {
+    Estimate: job.estimate_items.length || null,
+    Inventory: job.inventory_items.length || null,
+    Dispatch: (job.crew.length + job.trucks.length) || null,
+    Billing: job.invoices.length || null,
+    Activity: job.activities.length || null,
   };
 
   return (
@@ -39,10 +65,12 @@ export default function JobDetail() {
           <h1>{job.job_number} — {job.first_name} {job.last_name}</h1>
           <div className="sub">
             {JOB_TYPES[job.type]} move · {job.move_date ? fmtDate(job.move_date) : 'No date'} · Estimate <b>{money(job.estimated_total)}</b>
+            {balance > 0.005 && <> · Balance due <b style={{ color: 'var(--danger)' }}>{money(balance)}</b></>}
           </div>
         </div>
         <div className="row">
-          <select value={job.status} onChange={(e) => setStatus(e.target.value)} style={{ width: 170 }}>
+          <label className="muted" style={{ fontSize: 12, fontWeight: 600 }}>Status</label>
+          <select value={job.status} onChange={(e) => onStatusChange(e.target.value)} style={{ width: 160 }}>
             {Object.entries(STATUS_META).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
         </div>
@@ -50,7 +78,9 @@ export default function JobDetail() {
 
       <div className="tabs">
         {TABS.map((t) => (
-          <button key={t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>{t}</button>
+          <button key={t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>
+            {t}{TAB_COUNTS[t] ? <span className="tab-badge">{TAB_COUNTS[t]}</span> : null}
+          </button>
         ))}
       </div>
 
@@ -60,6 +90,22 @@ export default function JobDetail() {
       {tab === 'Dispatch' && <Dispatch job={job} onSaved={setJob} />}
       {tab === 'Billing' && <Billing job={job} onChanged={load} />}
       {tab === 'Activity' && <Activity job={job} onChanged={load} />}
+
+      {lostOpen && (
+        <Modal title="Mark job as lost" onClose={() => setLostOpen(false)} footer={
+          <>
+            <button className="btn" onClick={() => setLostOpen(false)}>Cancel</button>
+            <button className="btn danger" onClick={() => { applyStatus('lost', lostReason); setLostOpen(false); }}>Mark as lost</button>
+          </>
+        }>
+          <Field label="Why was this job lost? (helps your reporting)">
+            <select value={lostReason} onChange={(e) => setLostReason(e.target.value)}>
+              <option value="">Select a reason…</option>
+              {['Price too high', 'Went with competitor', 'Move cancelled', 'Bad timing', 'No response', 'Other'].map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </Field>
+        </Modal>
+      )}
     </>
   );
 }
@@ -370,9 +416,14 @@ function Billing({ job, onChanged }) {
   const [discount, setDiscount] = useState(0);
   const [pay, setPay] = useState({ amount: '', method: 'card', reference: '' });
   const [error, setError] = useState('');
+  const [company, setCompany] = useState({});
+
+  useEffect(() => { api('/settings/company').then(setCompany).catch(() => {}); }, []);
 
   const totalPaid = job.payments.reduce((s, p) => s + p.amount, 0);
   const totalInvoiced = job.invoices.filter((i) => i.status !== 'void').reduce((s, i) => s + i.total, 0);
+  const paidFor = (inv) => job.payments.filter((p) => p.invoice_id === inv.id).reduce((s, p) => s + p.amount, 0);
+  const balanceFor = (inv) => Math.round((inv.total - paidFor(inv)) * 100) / 100;
 
   const createInvoice = async () => {
     setError('');
@@ -381,6 +432,12 @@ function Billing({ job, onChanged }) {
       setShowInvoice(false);
       onChanged();
     } catch (e) { setError(e.message); }
+  };
+
+  const openPayment = (inv) => {
+    const bal = balanceFor(inv);
+    setShowPayment(inv);
+    setPay({ amount: bal > 0 ? String(bal) : '', method: 'card', reference: '' });
   };
 
   const recordPayment = async () => {
@@ -394,6 +451,50 @@ function Billing({ job, onChanged }) {
       setPay({ amount: '', method: 'card', reference: '' });
       onChanged();
     } catch (e) { setError(e.message); }
+  };
+
+  const voidInvoice = async (inv) => {
+    if (!window.confirm(`Void invoice ${inv.invoice_number}? This can't be undone.`)) return;
+    await api(`/billing/invoices/${inv.id}`, { method: 'PUT', body: { status: 'void' } });
+    onChanged();
+  };
+
+  const printInvoice = (inv) => {
+    const items = job.estimate_items || [];
+    const pays = job.payments.filter((p) => p.invoice_id === inv.id);
+    const taxAmt = (inv.subtotal - inv.discount) * inv.tax_rate / 100;
+    const esc = (s) => String(s == null ? '' : s).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+    const win = window.open('', '_blank', 'width=820,height=920');
+    if (!win) { alert('Please allow pop-ups to print invoices.'); return; }
+    win.document.write(`<!doctype html><html><head><title>Invoice ${esc(inv.invoice_number)}</title>
+      <style>body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;padding:42px;max-width:720px;margin:0 auto}
+      h1{color:#2563eb;margin:0;font-size:24px}table{width:100%;border-collapse:collapse}
+      th,td{padding:9px 6px;border-bottom:1px solid #e2e8f0;font-size:14px}th{text-align:left;color:#64748b;font-size:11px;text-transform:uppercase}
+      .muted{color:#64748b}.right{text-align:right}.tot td{border:none;padding:4px 6px}</style></head><body>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><h1>${esc(company.company_name || 'Your Moving Company')}</h1>
+          <div class="muted" style="font-size:13px;margin-top:4px">${esc(company.company_address || '')}<br/>${esc(company.company_phone || '')} ${company.company_email ? '· ' + esc(company.company_email) : ''}</div></div>
+        <div class="right"><div style="font-size:22px;font-weight:800">INVOICE</div>
+          <div class="muted" style="font-size:13px">${esc(inv.invoice_number)}<br/>Issued ${fmtDate(inv.created_at)}<br/>${inv.due_date ? 'Due ' + fmtDate(inv.due_date) : ''}</div></div>
+      </div>
+      <div style="margin-top:26px;font-size:14px"><b>Bill to</b><br/>${esc(job.first_name)} ${esc(job.last_name)}<br/>
+        <span class="muted">${esc(job.customer_email || '')} ${esc(job.customer_phone || '')}</span></div>
+      <table style="margin-top:18px"><thead><tr><th>Item</th><th class="right">Qty</th><th class="right">Rate</th><th class="right">Amount</th></tr></thead>
+        <tbody>${items.map((it) => `<tr><td>${esc(it.name)}</td><td class="right">${it.quantity}</td><td class="right">${money(it.rate)}</td><td class="right">${money(it.quantity * it.rate)}</td></tr>`).join('') || '<tr><td colspan=4 class="muted">No line items</td></tr>'}</tbody></table>
+      <table class="tot" style="margin-top:12px;margin-left:auto;width:300px">
+        <tr><td class="muted">Subtotal</td><td class="right">${money(inv.subtotal)}</td></tr>
+        ${inv.discount ? `<tr><td class="muted">Discount</td><td class="right">-${money(inv.discount)}</td></tr>` : ''}
+        <tr><td class="muted">Tax (${inv.tax_rate}%)</td><td class="right">${money(taxAmt)}</td></tr>
+        <tr><td style="font-size:16px"><b>Total</b></td><td class="right" style="font-size:16px"><b>${money(inv.total)}</b></td></tr>
+        <tr><td class="muted">Paid</td><td class="right">${money(paidFor(inv))}</td></tr>
+        <tr><td><b>Balance due</b></td><td class="right"><b>${money(balanceFor(inv))}</b></td></tr>
+      </table>
+      ${pays.length ? `<div style="margin-top:24px"><b>Payments</b><table><tbody>${pays.map((p) => `<tr><td>${fmtDate(p.paid_at)}</td><td style="text-transform:capitalize">${esc(p.method)}</td><td class="right">${money(p.amount)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+      <p class="muted" style="margin-top:34px">Thank you for choosing ${esc(company.company_name || 'us')}!</p>
+      </body></html>`);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 350);
   };
 
   return (
@@ -410,21 +511,25 @@ function Billing({ job, onChanged }) {
           Invoices
           <button className="btn primary sm" onClick={() => setShowInvoice(true)}><Plus size={14} /> Create invoice from estimate</button>
         </div>
-        {job.invoices.length === 0 ? <Empty>No invoices yet.</Empty> : (
+        {job.invoices.length === 0 ? <Empty>No invoices yet — create one from the estimate above.</Empty> : (
           <table className="data">
-            <thead><tr><th>Invoice #</th><th>Status</th><th>Subtotal</th><th>Tax</th><th>Total</th><th>Due</th><th /></tr></thead>
+            <thead><tr><th>Invoice #</th><th>Status</th><th>Total</th><th>Paid</th><th>Balance</th><th>Due</th><th /></tr></thead>
             <tbody>
               {job.invoices.map((inv) => (
                 <tr key={inv.id}>
                   <td><b>{inv.invoice_number}</b></td>
                   <td><span className="badge" style={{ background: inv.status === 'paid' ? '#10b981' : inv.status === 'partial' ? '#f59e0b' : inv.status === 'void' ? '#9ca3af' : '#0ea5e9' }}>{inv.status}</span></td>
-                  <td>{money(inv.subtotal)}</td>
-                  <td>{inv.tax_rate}%</td>
                   <td><b>{money(inv.total)}</b></td>
+                  <td>{money(paidFor(inv))}</td>
+                  <td><b>{money(balanceFor(inv))}</b></td>
                   <td>{fmtDate(inv.due_date)}</td>
-                  <td>
+                  <td style={{ whiteSpace: 'nowrap' }}>
                     {inv.status !== 'paid' && inv.status !== 'void' && (
-                      <button className="btn sm" onClick={() => { setShowPayment(inv); setPay((p) => ({ ...p, amount: '' })); }}>Record payment</button>
+                      <button className="btn sm primary" onClick={() => openPayment(inv)}>Record payment</button>
+                    )}{' '}
+                    <button className="btn sm" onClick={() => printInvoice(inv)}>Print</button>{' '}
+                    {inv.status !== 'void' && inv.status !== 'paid' && (
+                      <button className="btn icon sm danger" title="Void" onClick={() => voidInvoice(inv)}><Trash2 size={13} /></button>
                     )}
                   </td>
                 </tr>
