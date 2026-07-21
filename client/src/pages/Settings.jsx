@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { Plus, Trash2, Save } from 'lucide-react';
 import { api } from '../lib/api.js';
 import { Field, Modal, Empty } from '../components/ui.jsx';
+import ImportData from '../components/ImportData.jsx';
 import { useAuth } from '../lib/auth.jsx';
 
-const TABS = ['Company', 'Lead Capture & Phone', 'Lead Sources', 'Move Sizes', 'Services', 'Crew', 'Trucks', 'Users', 'Email Templates'];
+const TABS = ['Company', 'Import Data', 'Lead Capture & Phone', 'Lead Sources', 'Move Sizes', 'Services', 'Crew', 'Trucks', 'Users', 'Email Templates'];
 
 export default function Settings() {
   // Remember the active tab in the URL hash so refresh / deep-links keep it.
@@ -29,6 +30,7 @@ export default function Settings() {
       </div>
 
       {tab === 'Company' && <Company isAdmin={isAdmin} />}
+      {tab === 'Import Data' && <ImportData />}
       {tab === 'Lead Capture & Phone' && <LeadCapture />}
       {tab === 'Lead Sources' && (
         <SimpleCrud path="/settings/lead-sources" isAdmin={isAdmin} fields={[

@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import {
   Plus, Phone, Mail, MessageSquare, RefreshCw, FileText, CheckCircle2, Circle, X,
   UserPlus, CalendarCheck, Truck, DollarSign, Clock, TrendingUp, Rocket, RotateCw,
+  ArrowUpRight, ArrowDownRight, Kanban, CalendarDays, Upload,
 } from 'lucide-react';
 import {
-  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis,
+  ResponsiveContainer, ComposedChart, Area, Bar, Line, XAxis, YAxis,
   CartesianGrid, Tooltip, PieChart, Pie, Cell, Legend,
 } from 'recharts';
 import { api, money, fmtDate, fmtDateTime, STATUS_META } from '../lib/api.js';
 import { useLive } from '../lib/useLive.js';
+import { useAuth } from '../lib/auth.jsx';
 import { StatusBadge, Empty } from '../components/ui.jsx';
 import NewLeadModal from '../components/NewLeadModal.jsx';
 
@@ -76,9 +78,16 @@ function Onboarding({ onNewLead, refreshSignal }) {
   );
 }
 
-function Kpi({ icon: Icon, label, value, hint, color }) {
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function Kpi({ icon: Icon, label, value, hint, color, onClick }) {
   return (
-    <div className="kpi kpi-rich">
+    <div className={`kpi kpi-rich${onClick ? ' kpi-link' : ''}`} onClick={onClick} style={{ '--kpi-accent': color }}>
       <div className="kpi-icon" style={{ background: `${color}1a`, color }}><Icon size={20} /></div>
       <div>
         <div className="label">{label}</div>
@@ -120,6 +129,7 @@ export default function Dashboard() {
   const fromOnboarding = useRef(false);
   const reqId = useRef(0);
   const nav = useNavigate();
+  const { user } = useAuth();
 
   const load = () => {
     const id = ++reqId.current;
@@ -157,25 +167,34 @@ export default function Dashboard() {
     }
   };
 
+  const firstName = (user?.name || '').split(' ')[0];
+
   return (
     <>
-      <div className="page-head">
-        <div>
-          <h1>Dashboard</h1>
-          <div className="sub row" style={{ gap: 12 }}>Your moving business at a glance <LiveDot lastUpdated={lastUpdated} /></div>
+      <div className="dash-hero">
+        <div className="dash-hero-glow" />
+        <div className="dash-hero-inner">
+          <div>
+            <h1>{greeting()}{firstName ? `, ${firstName}` : ''} 👋</h1>
+            <div className="dash-hero-sub row" style={{ gap: 12 }}>Here's how your moving business is doing today <LiveDot lastUpdated={lastUpdated} /></div>
+          </div>
+          <div className="row dash-hero-actions">
+            <button className="btn ghost-light" onClick={() => nav('/pipeline')}><Kanban size={16} /> Pipeline</button>
+            <button className="btn ghost-light" onClick={() => nav('/calendar')}><CalendarDays size={16} /> Calendar</button>
+            <button className="btn hero-cta" onClick={() => { fromOnboarding.current = false; setShowNew(true); }}><Plus size={16} /> New Lead</button>
+          </div>
         </div>
-        <button className="btn primary" onClick={() => { fromOnboarding.current = false; setShowNew(true); }}><Plus size={16} /> New Lead</button>
       </div>
 
       <Onboarding refreshSignal={obSignal} onNewLead={() => { fromOnboarding.current = true; setShowNew(true); }} />
 
       <div className="kpi-grid">
-        <Kpi icon={UserPlus} label="New leads (month)" value={kpis.newLeads ?? 0} color="#6366f1" />
-        <Kpi icon={CalendarCheck} label="Booked (month)" value={kpis.bookedCount ?? 0} hint={`${money0(kpis.bookedValue)} value`} color="#22c55e" />
-        <Kpi icon={Truck} label="Moves today" value={kpis.movesToday ?? 0} color="#f59e0b" />
-        <Kpi icon={DollarSign} label="Collected (month)" value={money0(kpis.collected)} color="#10b981" />
-        <Kpi icon={Clock} label="Outstanding" value={money0(kpis.outstanding)} color="#ef4444" />
-        <Kpi icon={TrendingUp} label="Conversion (90d)" value={`${kpis.conversionRate ?? 0}%`} color="#0ea5e9" />
+        <Kpi icon={UserPlus} label="New leads (month)" value={kpis.newLeads ?? 0} color="#6366f1" onClick={() => nav('/pipeline')} />
+        <Kpi icon={CalendarCheck} label="Booked (month)" value={kpis.bookedCount ?? 0} hint={`${money0(kpis.bookedValue)} value`} color="#22c55e" onClick={() => nav('/jobs')} />
+        <Kpi icon={Truck} label="Moves today" value={kpis.movesToday ?? 0} color="#f59e0b" onClick={() => nav('/dispatch')} />
+        <Kpi icon={DollarSign} label="Collected (month)" value={money0(kpis.collected)} color="#10b981" onClick={() => nav('/invoices')} />
+        <Kpi icon={Clock} label="Outstanding" value={money0(kpis.outstanding)} color="#ef4444" onClick={() => nav('/invoices')} />
+        <Kpi icon={TrendingUp} label="Conversion (90d)" value={`${kpis.conversionRate ?? 0}%`} color="#0ea5e9" onClick={() => nav('/reports')} />
       </div>
 
       <div className="grid-3070 dash-charts">
@@ -184,15 +203,25 @@ export default function Dashboard() {
           <div className="card-body">
             <ResponsiveContainer width="100%" height={300}>
               <ComposedChart data={monthlyTrend} margin={{ top: 10, right: 8, left: -6, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="revFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.28} />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="bookedBar" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#6366f1" />
+                    <stop offset="100%" stopColor="#818cf8" />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eef2f7" />
                 <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
                 <YAxis yAxisId="l" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <YAxis yAxisId="r" orientation="right" tickFormatter={compactMoney} tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                <Tooltip content={<ChartTip currencyKeys={['revenue']} />} />
+                <Tooltip content={<ChartTip currencyKeys={['revenue']} />} cursor={{ fill: 'rgba(99,102,241,0.06)' }} />
                 <Legend wrapperStyle={{ fontSize: 12 }} verticalAlign="top" align="right" />
                 <Bar yAxisId="l" dataKey="leads" name="Leads" fill="#c7d2fe" radius={[4, 4, 0, 0]} barSize={18} />
-                <Bar yAxisId="l" dataKey="booked" name="Booked" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={18} />
-                <Line yAxisId="r" type="monotone" dataKey="revenue" name="Revenue ($)" stroke="#10b981" strokeWidth={3} dot={{ r: 3 }} />
+                <Bar yAxisId="l" dataKey="booked" name="Booked" fill="url(#bookedBar)" radius={[4, 4, 0, 0]} barSize={18} />
+                <Area yAxisId="r" type="monotone" dataKey="revenue" name="Revenue ($)" stroke="#10b981" strokeWidth={3} fill="url(#revFill)" dot={{ r: 3, fill: '#10b981' }} activeDot={{ r: 5 }} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
