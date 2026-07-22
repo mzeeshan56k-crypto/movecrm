@@ -280,10 +280,14 @@ export async function ensureSchema(pool) {
   for (const row of missing.rows) {
     await pool.query('UPDATE organizations SET public_key = $1 WHERE id = $2', [newPublicKey(), row.id]);
   }
-  // Ensure every org has at least one lead-capture website (using its existing key).
+  // Ensure every PAID or owner org has a lead-capture website (using its existing
+  // key). Trials get none until they purchase — lead-capture websites are a paid
+  // product, so this backfill deliberately skips trial orgs. Upgrading to a paid
+  // plan provisions the first website automatically on the next request.
   const noSite = await pool.query(`
     SELECT o.id, o.public_key FROM organizations o
-    WHERE NOT EXISTS (SELECT 1 FROM websites w WHERE w.org_id = o.id)
+    WHERE o.plan <> 'trial'
+      AND NOT EXISTS (SELECT 1 FROM websites w WHERE w.org_id = o.id)
   `);
   for (const row of noSite.rows) {
     await pool.query(
