@@ -3,51 +3,58 @@ import { Link } from 'react-router-dom';
 import {
   Truck, ArrowRight, CalendarClock, LayoutDashboard, KanbanSquare, Calculator,
   Route as RouteIcon, Receipt, Star, PhoneCall, BarChart3, Check, Zap,
-  Wallet, Layers, Plug, Gauge, Heart, ChevronDown,
+  Wallet, Layers, Plug, Gauge, Heart, ChevronDown, Sparkles, Clock,
+  CheckCircle2, MessageSquare, ShieldCheck,
 } from 'lucide-react';
 
 const CALENDLY = 'https://calendly.com/mzseoconsultant/30min';
 
+const MARQUEE = [
+  'Sales Pipeline', 'Estimating', 'Dispatch', 'Crews & Trucks', 'Billing',
+  'Lead Capture', 'Call Tracking', 'Reviews', 'Analytics', 'Tasks', 'Calendar', 'Reporting',
+];
+
 const FEATURES = [
-  { icon: KanbanSquare, title: 'Sales pipeline', desc: 'Drag-and-drop Kanban from first call to booked job — never lose a lead again.' },
-  { icon: Calculator, title: 'Instant estimating', desc: 'Line-item quotes off a configurable tariff that total themselves in seconds.' },
-  { icon: RouteIcon, title: 'Dispatch & crews', desc: 'A live day board with real-time crew and truck availability at a glance.' },
-  { icon: Receipt, title: 'Billing that closes', desc: 'Invoices from estimates, card/cash/ACH payments, and balances tracked automatically.' },
-  { icon: PhoneCall, title: 'Calls become leads', desc: 'Inbound calls are answered, recorded, and turned into leads without lifting a finger.' },
-  { icon: Star, title: 'Reputation on autopilot', desc: 'Finished jobs auto-request reviews and route your happiest customers to Google.' },
-  { icon: BarChart3, title: 'Reports that decide', desc: 'Lead-source ROI, salesperson performance, and cash collected — the numbers that matter.' },
-  { icon: LayoutDashboard, title: 'One clean dashboard', desc: 'Bookings, moves today, cash collected, and conversion rate the moment you log in.' },
+  { icon: KanbanSquare, title: 'Sales pipeline', desc: 'Drag and drop Kanban from first call to booked job, so no lead ever slips through.' },
+  { icon: Calculator, title: 'Instant estimating', desc: 'Line item quotes off a configurable tariff that total themselves in seconds.' },
+  { icon: RouteIcon, title: 'Dispatch & crews', desc: 'A live day board with real time crew and truck availability at a glance.' },
+  { icon: Receipt, title: 'Billing that closes', desc: 'Invoices from estimates, card, cash and ACH payments, balances tracked automatically.' },
+  { icon: PhoneCall, title: 'Calls become leads', desc: 'Inbound calls are answered, recorded and turned into leads without lifting a finger.' },
+  { icon: Star, title: 'Reputation on autopilot', desc: 'Finished jobs auto request reviews and route your happiest customers to Google.' },
+  { icon: BarChart3, title: 'Reports that decide', desc: 'Lead source ROI, salesperson performance and cash collected, the numbers that matter.' },
+  { icon: LayoutDashboard, title: 'One clean dashboard', desc: 'Bookings, moves today, cash collected and conversion rate the moment you log in.' },
 ];
 
 const STATS = [
   { value: '20+', label: 'Modules in one app' },
   { value: '5 min', label: 'To your first quote' },
-  { value: '100%', label: 'Multi-tenant & secure' },
-  { value: '14-day', label: 'Free trial, no card' },
-];
-
-const PLANS = [
-  { name: 'Starter', price: '$100', unit: '/mo', blurb: '1 website', features: ['Full CRM & pipeline', 'Estimating & billing', 'Lead capture'] },
-  { name: 'Growth', price: '$200', unit: '/mo', blurb: '5 websites', features: ['Everything in Starter', 'Dispatch & crews', 'Reviews & reputation'], featured: true },
-  { name: 'Pro', price: '$400', unit: '/mo', blurb: '15 websites', features: ['Everything in Growth', 'Advanced analytics', 'Priority support'] },
+  { value: '~50%', label: 'Less than other platforms' },
+  { value: '100%', label: 'Multi tenant and secure' },
 ];
 
 const WHY = [
-  { icon: Wallet, title: 'Half the price', desc: 'Everything the big moving-CRM platforms charge a premium for — at roughly half the budget. More margin stays in your pocket.' },
-  { icon: Layers, title: 'One app, not ten', desc: 'Pipeline, estimating, dispatch, crews, billing, reviews and reporting live together. No stitching tools that don’t talk to each other.' },
-  { icon: Plug, title: 'Leads flow in on their own', desc: 'A hosted quote page, embeddable form, webhook, and phone answering turn website visits and calls into leads automatically.' },
-  { icon: Gauge, title: 'Live in minutes', desc: 'Self-serve signup provisions your workspace, tariff, and lead sources instantly. Send your first quote the same afternoon.' },
-  { icon: Star, title: 'Reputation built in', desc: 'Finished jobs auto-request reviews and route happy customers to Google — no extra reputation tool to buy.' },
-  { icon: Truck, title: 'Made for movers only', desc: 'Move sizes, cubic feet, crews, trucks, long-distance vs local — the language and workflow of a moving company, not generic sales software.' },
+  { icon: Wallet, title: 'Half the price', desc: 'Everything the big moving CRM platforms charge a premium for, at roughly half the budget. More margin stays in your pocket.' },
+  { icon: Layers, title: 'One app, not ten', desc: 'Pipeline, estimating, dispatch, crews, billing, reviews and reporting live together. No stitching tools that do not talk to each other.' },
+  { icon: Plug, title: 'Leads flow in on their own', desc: 'A hosted quote page, embeddable form, webhook and phone answering turn website visits and calls into leads automatically.' },
+  { icon: Gauge, title: 'Live in minutes', desc: 'Self serve signup provisions your workspace, tariff and lead sources instantly. Send your first quote the same afternoon.' },
+  { icon: Star, title: 'Reputation built in', desc: 'Finished jobs auto request reviews and route happy customers to Google, with no extra reputation tool to buy.' },
+  { icon: Truck, title: 'Made for movers only', desc: 'Move sizes, cubic feet, crews, trucks, long distance versus local. The language and workflow of a moving company, not generic sales software.' },
+];
+
+const DEMO_POINTS = [
+  { icon: Truck, title: 'Set up around your business', desc: 'We tailor the walkthrough to your services, crews and pricing, not a canned demo reel.' },
+  { icon: MessageSquare, title: 'Every question answered live', desc: 'Ask anything about switching, importing your data, or how a workflow maps into Move CRM.' },
+  { icon: Clock, title: 'Just 30 minutes', desc: 'A focused, no pressure session. Come see it run, then decide in your own time.' },
+  { icon: Sparkles, title: 'Leave with a clear plan', desc: 'You walk away knowing exactly how to switch in days, and what it saves you every month.' },
 ];
 
 const FAQS = [
-  { q: 'How is Move CRM cheaper than other moving CRMs?', a: 'We built Move CRM lean and pass the savings on. You get the same core toolkit the established platforms sell — pipeline, estimating, dispatch, billing, reviews — for roughly half the monthly cost, with no setup fees and no long contracts.' },
-  { q: 'Do I need a credit card to start?', a: 'No. Every company starts on a 14-day free trial with no credit card. Add a payment method only when you decide to keep going.' },
-  { q: 'Is my company’s data private?', a: 'Yes. Move CRM is fully multi-tenant — every record is scoped to your organization, so no other company can ever see your leads, customers, or jobs.' },
+  { q: 'How is Move CRM cheaper than other moving CRMs?', a: 'We built Move CRM lean and pass the savings on. You get the same core toolkit the established platforms sell, pipeline, estimating, dispatch, billing and reviews, for roughly half the monthly cost, with no setup fees and no long contracts.' },
+  { q: 'Do I need a credit card to start?', a: 'No. Every company starts on a 14 day free trial with no credit card. Add a payment method only when you decide to keep going.' },
+  { q: 'Is my company data private?', a: 'Yes. Move CRM is fully multi tenant, so every record is scoped to your organization and no other company can ever see your leads, customers or jobs.' },
   { q: 'Can I capture leads from my existing website?', a: 'Absolutely. Each company gets a hosted quote page, an embeddable form for your site, and a webhook for Zapier or lead providers. Inbound phone calls can be answered and turned into leads too.' },
-  { q: 'What kinds of moves does it handle?', a: 'Local, long-distance, commercial, storage, and labor-only jobs — with move sizes, cubic-feet inventory, crews, and trucks built for the way movers actually work.' },
-  { q: 'Can I see it before committing?', a: 'Yes — book a free 30-minute demo and we’ll walk through Move CRM set up around your exact workflow, or just start the free trial and explore it yourself.' },
+  { q: 'What kinds of moves does it handle?', a: 'Local, long distance, commercial, storage and labor only jobs, with move sizes, cubic feet inventory, crews and trucks built for the way movers actually work.' },
+  { q: 'How do I see it before committing?', a: 'Book a free 30 minute demo and we will walk through Move CRM set up around your exact workflow. It is the fastest way to know if it fits your business.' },
 ];
 
 function Faq({ q, a }) {
@@ -74,7 +81,6 @@ export default function Home() {
             <a href="#why">Why Move CRM</a>
             <a href="#features">Features</a>
             <a href="#story">Our Story</a>
-            <a href="#pricing">Pricing</a>
             <a href="#faq">FAQ</a>
             <Link to="/login">Sign in</Link>
             <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn primary lp-nav-cta">Book a demo</a>
@@ -84,25 +90,27 @@ export default function Home() {
 
       {/* Hero */}
       <section className="lp-hero">
+        <div className="lp-grid-overlay" />
         <div className="lp-glow lp-glow-a" />
         <div className="lp-glow lp-glow-b" />
         <div className="lp-container lp-hero-inner">
-          <span className="lp-pill"><Zap size={13} /> The operating system for moving companies</span>
-          <h1>Move faster.<br /><span className="lp-grad">Book more moves.</span></h1>
-          <p className="lp-sub">
-            Move CRM runs your whole moving company in one place — leads, estimates, dispatch,
-            crews, billing, and reviews. Less busywork, more booked jobs.
+          <span className="lp-pill lp-reveal"><Zap size={13} /> The operating system for moving companies</span>
+          <h1 className="lp-reveal lp-d1">Move faster.<br /><span className="lp-grad">Book more moves.</span></h1>
+          <p className="lp-sub lp-reveal lp-d2">
+            Move CRM runs your whole moving company in one place: leads, estimates, dispatch,
+            crews, billing and reviews. Less busywork, more booked jobs, at about half the cost
+            of the other platforms.
           </p>
-          <div className="lp-hero-cta">
-            <Link to="/signup" className="btn primary lp-btn-lg">Start free <ArrowRight size={18} /></Link>
-            <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn lp-btn-lg lp-btn-ghost">
-              <CalendarClock size={18} /> Book a demo
+          <div className="lp-hero-cta lp-reveal lp-d3">
+            <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn primary lp-btn-lg lp-btn-glow">
+              <CalendarClock size={18} /> Book a free demo
             </a>
+            <Link to="/signup" className="btn lp-btn-lg lp-btn-ghost">Start free <ArrowRight size={18} /></Link>
           </div>
-          <div className="lp-trust"><Check size={15} /> 14-day free trial · No credit card required</div>
+          <div className="lp-trust lp-reveal lp-d3"><Check size={15} /> 14 day free trial, no credit card, cancel any time</div>
 
           {/* Product mock */}
-          <div className="lp-mock">
+          <div className="lp-mock lp-reveal lp-d4">
             <div className="lp-mock-bar"><span /><span /><span /></div>
             <div className="lp-mock-body">
               <div className="lp-mock-side">
@@ -130,6 +138,15 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Marquee of modules */}
+        <div className="lp-marquee">
+          <div className="lp-marquee-track">
+            {[...MARQUEE, ...MARQUEE].map((m, i) => (
+              <span key={i} className="lp-marquee-item"><Sparkles size={13} /> {m}</span>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Stats */}
@@ -148,8 +165,9 @@ export default function Home() {
       <section id="why" className="lp-section">
         <div className="lp-container">
           <div className="lp-section-head">
+            <span className="lp-eyebrow">Why Move CRM</span>
             <h2>Why moving companies choose Move CRM</h2>
-            <p>The full toolkit the big platforms sell — without the enterprise price tag or the ten-tool tangle.</p>
+            <p>The full toolkit the big platforms sell, without the enterprise price tag or the ten tool tangle.</p>
           </div>
           <div className="lp-why-grid">
             {WHY.map((w) => (
@@ -169,8 +187,9 @@ export default function Home() {
       <section id="features" className="lp-section lp-section-alt">
         <div className="lp-container">
           <div className="lp-section-head">
+            <span className="lp-eyebrow">Features</span>
             <h2>Everything it takes to run the move</h2>
-            <p>One login replaces the spreadsheets, the whiteboard, and the three tools that don’t talk to each other.</p>
+            <p>One login replaces the spreadsheets, the whiteboard, and the three tools that do not talk to each other.</p>
           </div>
           <div className="lp-feature-grid">
             {FEATURES.map((f) => (
@@ -190,62 +209,75 @@ export default function Home() {
           <div className="lp-story-media">
             <div className="lp-story-badge"><Heart size={16} /> Our Story</div>
             <div className="lp-story-card">
-              <div className="lp-story-quote">“Great software shouldn’t be a luxury only the biggest movers can afford.”</div>
-              <div className="lp-story-stat"><strong>~50%</strong><span>less than other moving-CRM platforms</span></div>
+              <div className="lp-story-quote">“Great software should not be a luxury only the biggest movers can afford.”</div>
+              <div className="lp-story-stat"><strong>~50%</strong><span>less than other moving CRM platforms</span></div>
             </div>
           </div>
           <div className="lp-story-copy">
             <h2>Built to give every moving company a fair shot</h2>
             <p>
-              I kept meeting moving-company owners running a serious business off scattered
-              spreadsheets, sticky notes, and a whiteboard — because the “real” moving-CRM
-              platforms were priced for the giants, not the growing crew doing the actual moves.
+              I kept meeting moving company owners running a serious business off scattered
+              spreadsheets, sticky notes and a whiteboard, because the real moving CRM platforms
+              were priced for the giants, not the growing crew doing the actual moves.
             </p>
             <p>
               So I set out to build Move CRM: one place where a moving company can manage all of
-              its data — leads, estimates, dispatch, crews, billing, and reviews — the way it
-              actually works day to day, at <strong>almost half the budget</strong> of the other
-              platforms out there.
+              its data, leads, estimates, dispatch, crews, billing and reviews, the way it
+              actually works day to day, at almost half the budget of the other platforms out there.
             </p>
             <p>
-              No enterprise sales calls, no bloated feature lists you’ll never touch. Just the
-              tools that book more moves and keep the office running — priced so any moving
-              company can afford to run better.
+              No enterprise sales calls, no bloated feature lists you will never touch. Just the
+              tools that book more moves and keep the office running, priced so any moving company
+              can afford to run better.
             </p>
             <div className="lp-hero-cta" style={{ marginTop: 26, justifyContent: 'flex-start' }}>
-              <Link to="/signup" className="btn primary lp-btn-lg">Start free <ArrowRight size={18} /></Link>
-              <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn lp-btn-lg">
+              <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn primary lp-btn-lg">
                 <CalendarClock size={18} /> Book a demo
               </a>
+              <Link to="/signup" className="btn lp-btn-lg">Start free <ArrowRight size={18} /></Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="lp-section lp-section-alt">
+      {/* Demo (replaces pricing) */}
+      <section id="demo" className="lp-section lp-section-alt">
         <div className="lp-container">
           <div className="lp-section-head">
-            <h2>Simple pricing that scales with you</h2>
-            <p>Start free for 14 days. Upgrade when you’re ready — cancel any time.</p>
+            <span className="lp-eyebrow">See it live</span>
+            <h2>The fastest way to see if Move CRM fits</h2>
+            <p>Book a free 30 minute demo. We set it up around your business and show you exactly how it books more moves for less.</p>
           </div>
-          <div className="lp-price-grid">
-            {PLANS.map((p) => (
-              <div key={p.name} className={'lp-price' + (p.featured ? ' featured' : '')}>
-                {p.featured && <span className="lp-price-tag">Most popular</span>}
-                <h3>{p.name}</h3>
-                <div className="lp-price-amount">{p.price}<span>{p.unit}</span></div>
-                <div className="lp-price-blurb">{p.blurb}</div>
-                <ul>
-                  {p.features.map((ft) => <li key={ft}><Check size={15} /> {ft}</li>)}
+          <div className="lp-demo">
+            <div className="lp-demo-points">
+              {DEMO_POINTS.map((d) => (
+                <div key={d.title} className="lp-demo-point">
+                  <div className="lp-demo-ic"><d.icon size={20} /></div>
+                  <div>
+                    <h3>{d.title}</h3>
+                    <p>{d.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="lp-demo-card">
+              <div className="lp-glow lp-glow-d" />
+              <div className="lp-demo-card-inner">
+                <div className="lp-demo-badge"><CalendarClock size={15} /> Free 30 min demo</div>
+                <h3>Ready in one call</h3>
+                <ul className="lp-demo-list">
+                  <li><CheckCircle2 size={16} /> Live walkthrough of your workflow</li>
+                  <li><CheckCircle2 size={16} /> Honest answers, zero pressure</li>
+                  <li><CheckCircle2 size={16} /> A plan to switch in days</li>
+                  <li><CheckCircle2 size={16} /> See the savings for yourself</li>
                 </ul>
-                <Link to="/signup" className={'btn lp-btn-lg ' + (p.featured ? 'primary' : '')} style={{ width: '100%', justifyContent: 'center' }}>
-                  Start free
-                </Link>
+                <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn primary lp-btn-lg lp-btn-glow" style={{ width: '100%', justifyContent: 'center' }}>
+                  Book your demo now <ArrowRight size={18} />
+                </a>
+                <div className="lp-demo-note"><Check size={14} /> Prefer to explore first? <Link to="/signup">Start free</Link></div>
               </div>
-            ))}
+            </div>
           </div>
-          <p className="lp-price-note">Need multiple locations or something custom? <a href={CALENDLY} target="_blank" rel="noreferrer">Talk to us →</a></p>
         </div>
       </section>
 
@@ -253,8 +285,9 @@ export default function Home() {
       <section id="faq" className="lp-section">
         <div className="lp-container lp-faq-wrap">
           <div className="lp-section-head">
+            <span className="lp-eyebrow">FAQ</span>
             <h2>Frequently asked questions</h2>
-            <p>Everything you need to know before you start. Still curious? <a href={CALENDLY} target="_blank" rel="noreferrer">Book a demo →</a></p>
+            <p>Everything you need to know before you start. Still curious? <a href={CALENDLY} target="_blank" rel="noreferrer">Book a demo.</a></p>
           </div>
           <div className="lp-faq-list">
             {FAQS.map((f) => <Faq key={f.q} q={f.q} a={f.a} />)}
@@ -265,12 +298,14 @@ export default function Home() {
       {/* CTA band */}
       <section className="lp-cta">
         <div className="lp-glow lp-glow-c" />
+        <div className="lp-grid-overlay" />
         <div className="lp-container lp-cta-inner">
+          <span className="lp-pill"><ShieldCheck size={13} /> No card, no risk, no pressure</span>
           <h2>See Move CRM run your business in 30 minutes</h2>
-          <p>Book a live demo and we’ll set it up around your exact workflow — no pressure, just a look.</p>
+          <p>Book a live demo and we will set it up around your exact workflow. Come see how much simpler and cheaper running your moving company can be.</p>
           <div className="lp-hero-cta">
-            <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn primary lp-btn-lg">
-              <CalendarClock size={18} /> Book your demo
+            <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn primary lp-btn-lg lp-btn-glow">
+              <CalendarClock size={18} /> Book your free demo
             </a>
             <Link to="/signup" className="btn lp-btn-lg lp-btn-ghost">Or start free <ArrowRight size={18} /></Link>
           </div>
@@ -285,7 +320,6 @@ export default function Home() {
             <a href="#why">Why Move CRM</a>
             <a href="#features">Features</a>
             <a href="#story">Our Story</a>
-            <a href="#pricing">Pricing</a>
             <a href="#faq">FAQ</a>
             <a href={CALENDLY} target="_blank" rel="noreferrer">Book a demo</a>
             <Link to="/login">Sign in</Link>

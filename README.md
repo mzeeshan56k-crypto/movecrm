@@ -94,8 +94,9 @@ Environment variables:
 - `DATABASE_URL` — PostgreSQL connection string **(required)**
 - `JWT_SECRET` — secret for signing logins **(set this in production)**
 - `OWNER_EMAIL` — this email gets free unlimited owner access. The owner does **not**
-  sign up like a regular company — they visit `/owner` once, set a password, and are
-  logged straight in. After that they just sign in normally at `/login`.
+  sign up like a regular company. Just go to `/login` and sign in with this email: the
+  **first** login sets the password (min 6 characters) and creates the owner workspace
+  automatically, and every login after that verifies against it.
   (Optional `OWNER_COMPANY` / `OWNER_NAME` name the auto-created owner workspace.)
 - `PORT` — server port (default `4000`)
 
