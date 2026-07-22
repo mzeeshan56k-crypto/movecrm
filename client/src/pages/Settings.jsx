@@ -77,6 +77,8 @@ export default function Settings() {
 }
 
 function LeadCapture() {
+  const { organization } = useAuth();
+  const canAddWebsites = organization && organization.plan !== 'trial';
   const [websites, setWebsites] = useState(null);
   const [baseUrl, setBaseUrl] = useState(window.location.origin);
   const [copied, setCopied] = useState('');
@@ -122,10 +124,14 @@ function LeadCapture() {
       <div className="card">
         <div className="card-head">
           🌐 Your lead-capture websites
-          <div className="row" style={{ gap: 6 }}>
-            <input placeholder="New website name…" value={newName} onChange={(e) => setNewName(e.target.value)} style={{ width: 170 }} />
-            <button className="btn primary sm" onClick={addWebsite}>+ Add</button>
-          </div>
+          {canAddWebsites ? (
+            <div className="row" style={{ gap: 6 }}>
+              <input placeholder="New website name…" value={newName} onChange={(e) => setNewName(e.target.value)} style={{ width: 170 }} />
+              <button className="btn primary sm" onClick={addWebsite}>+ Add</button>
+            </div>
+          ) : (
+            <Link to="/billing" className="btn primary sm" title="Lead-capture websites are sold separately">🔒 Purchase a website</Link>
+          )}
         </div>
         <div className="card-body">
           {error && <div className="error-text" style={{ marginBottom: 10 }}>{error}{/upgrade|plan/i.test(error) && <> — <Link to="/billing">see plans</Link></>}</div>}

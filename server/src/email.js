@@ -12,7 +12,7 @@ export async function sendEmail({ to, subject, html }) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: process.env.FROM_EMAIL || 'MoveCRM <onboarding@resend.dev>',
+      from: process.env.FROM_EMAIL || 'Movers CRM <onboarding@resend.dev>',
       to: recipients,
       subject,
       html,

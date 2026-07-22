@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { q, one, run } from '../db.js';
 import { requireRole } from '../auth.js';
 import { newPublicKey } from '../schema.js';
-import { assertWithinLimit } from '../limits.js';
+import { assertWithinLimit, orgPlan } from '../limits.js';
 
 const router = Router();
 
@@ -17,6 +17,15 @@ router.get('/', async (req, res) => {
 router.post('/', requireRole('admin'), async (req, res) => {
   const { name } = req.body || {};
   if (!name) return res.status(400).json({ error: 'Website name is required' });
+  // Lead-capture websites are a paid product. Self-serve/trial accounts cannot
+  // provision them — they must purchase a plan from us first.
+  const plan = await orgPlan(req.orgId);
+  if (plan.trial) {
+    return res.status(402).json({
+      error: 'Lead-capture websites are sold separately. Choose a plan or contact us to add a website.',
+      upgrade: true,
+    });
+  }
   try {
     await assertWithinLimit(req.orgId, 'websites');
   } catch (e) {

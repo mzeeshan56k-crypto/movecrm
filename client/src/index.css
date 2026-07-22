@@ -308,7 +308,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid rgba(37, 99, 235,
 }
 
 /* ============================================================
-   Landing page (Move CRM marketing homepage)
+   Landing page (Movers CRM marketing homepage)
    ============================================================ */
 .landing {
   --lp-ink: #0b1220;
@@ -449,7 +449,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid rgba(37, 99, 235,
 .lp-feature h3 { font-size: 17px; font-weight: 750; }
 .lp-feature p { color: var(--muted); font-size: 14px; line-height: 1.6; margin-top: 8px; }
 
-/* Why Move CRM */
+/* Why Movers CRM */
 .lp-why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
 .lp-why { display: flex; gap: 15px; background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 22px; transition: box-shadow 0.18s ease, border-color 0.18s ease; }
 .lp-why:hover { box-shadow: 0 16px 36px rgba(37,99,235,0.10); border-color: #c7d7fb; }
