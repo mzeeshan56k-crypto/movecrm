@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Trash2, Save } from 'lucide-react';
+import { Plus, Trash2, Save, Sparkles } from 'lucide-react';
 import { api } from '../lib/api.js';
 import { Field, Modal, Empty } from '../components/ui.jsx';
 import ImportData from '../components/ImportData.jsx';
@@ -240,7 +240,49 @@ function Company({ isAdmin }) {
         <Field label="Default tax rate (%)"><input type="number" step="0.01" value={s.default_tax_rate || ''} onChange={set('default_tax_rate')} disabled={!isAdmin} /></Field>
         {isAdmin && <button className="btn primary" onClick={save}><Save size={15} /> {saved ? 'Saved!' : 'Save'}</button>}
       </div>
+      {isAdmin && <DemoData />}
       {isAdmin && <DangerZone />}
+    </div>
+  );
+}
+
+function DemoData() {
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [err, setErr] = useState('');
+
+  const load = async (force = false) => {
+    setBusy(true); setErr(''); setMsg('');
+    try {
+      const r = await api('/account/seed-demo', { method: 'POST', body: force ? { force: true } : {} });
+      setMsg(`✓ Loaded demo data — ${r.customers} customers and ${r.jobs} jobs. Reload to explore.`);
+    } catch (e) {
+      if (e.message && e.message.toLowerCase().includes('already has data')) {
+        if (window.confirm('This workspace already has data. Add demo data on top of it anyway?')) {
+          return load(true);
+        }
+        setErr('Cancelled. Tip: use "Reset workspace data" below first for a clean demo.');
+      } else {
+        setErr(e.message);
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div style={{ borderTop: '1px solid var(--border)', padding: 18 }}>
+      <div className="section-title" style={{ color: 'var(--primary)', marginTop: 0 }}>Demo data</div>
+      <p className="muted" style={{ marginTop: 0 }}>
+        Fill this workspace with a realistic sample company: customers, a full sales pipeline, booked and
+        completed moves, dispatch assignments, invoices and payments, reviews, tasks and calls. Perfect for
+        showing prospective clients how everything looks. Wipe it any time with "Reset workspace data" below.
+      </p>
+      {msg && <div style={{ color: '#22c55e', fontWeight: 600, marginBottom: 8 }}>{msg}</div>}
+      {err && <div className="error-text" style={{ marginBottom: 8 }}>{err}</div>}
+      <button className="btn primary" onClick={() => load(false)} disabled={busy}>
+        <Sparkles size={15} /> {busy ? 'Loading demo data…' : 'Load demo data'}
+      </button>
     </div>
   );
 }
