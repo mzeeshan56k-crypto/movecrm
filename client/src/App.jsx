@@ -1,8 +1,10 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './lib/auth.jsx';
 import Layout from './components/Layout.jsx';
+import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
+import OwnerSetup from './pages/OwnerSetup.jsx';
 import PublicQuote from './pages/PublicQuote.jsx';
 import PublicReview from './pages/PublicReview.jsx';
 import Dashboard from './pages/Dashboard.jsx';
@@ -32,9 +34,11 @@ export default function App() {
 
       {!user ? (
         <>
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="/owner" element={<OwnerSetup />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </>
       ) : (
         <Route element={<Layout />}>

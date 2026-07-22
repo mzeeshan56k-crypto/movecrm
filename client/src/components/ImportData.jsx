@@ -72,7 +72,7 @@ export default function ImportData() {
         <div className="card-body" style={{ textAlign: 'center', padding: 36 }}>
           <CheckCircle2 size={54} color="#22c55e" />
           <h2 style={{ margin: '14px 0 6px' }}>Import complete 🎉</h2>
-          <p className="muted" style={{ marginTop: 0 }}>Your data is now in MoveCRM.</p>
+          <p className="muted" style={{ marginTop: 0 }}>Your data is now in Move CRM.</p>
           <div className="row" style={{ justifyContent: 'center', gap: 28, margin: '18px 0' }}>
             <div><div style={{ fontSize: 30, fontWeight: 800 }}>{result.customers}</div><div className="muted">customers</div></div>
             {result.jobs > 0 && <div><div style={{ fontSize: 30, fontWeight: 800 }}>{result.jobs}</div><div className="muted">jobs / leads</div></div>}

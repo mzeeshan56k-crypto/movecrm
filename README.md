@@ -93,7 +93,14 @@ Environment variables:
 
 - `DATABASE_URL` — PostgreSQL connection string **(required)**
 - `JWT_SECRET` — secret for signing logins **(set this in production)**
-- `OWNER_EMAIL` — this email gets free unlimited owner access
+- `OWNER_EMAIL` — this email gets free unlimited owner access. The owner does **not**
+  sign up like a regular company. Just go to `/login` and sign in with this email.
+- `OWNER_PASSWORD` — **recommended.** When set, this is the owner's password: signing in
+  with `OWNER_EMAIL` + `OWNER_PASSWORD` always works and (re)creates or re-syncs the owner
+  account automatically, even if an old account with a forgotten password already exists.
+  Change it any time by updating this env var and redeploying. If you leave it unset, the
+  **first** login with `OWNER_EMAIL` instead sets whatever password you type (min 6 chars).
+  (Optional `OWNER_COMPANY` / `OWNER_NAME` name the auto-created owner workspace.)
 - `PORT` — server port (default `4000`)
 
 ## Architecture

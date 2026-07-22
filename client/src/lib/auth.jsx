@@ -35,6 +35,16 @@ export function AuthProvider({ children }) {
     if (me) setOrganization(me.organization);
   };
 
+  const ownerStatus = () => api('/auth/owner');
+
+  const ownerSetup = async (password) => {
+    const d = await api('/auth/owner/setup', { method: 'POST', body: { password } });
+    setToken(d.token);
+    setUser(d.user);
+    const me = await api('/auth/me').catch(() => null);
+    if (me) setOrganization(me.organization);
+  };
+
   const logout = () => {
     clearToken();
     setUser(null);
@@ -42,7 +52,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, organization, loading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, organization, loading, login, signup, ownerStatus, ownerSetup, logout }}>
       {children}
     </AuthContext.Provider>
   );
