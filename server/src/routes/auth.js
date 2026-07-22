@@ -109,28 +109,61 @@ router.post('/login', async (req, res) => {
   const cleanEmail = String(email).toLowerCase().trim();
   const envOwner = ownerEmail();
   const isOwner = envOwner && cleanEmail === envOwner;
+  const ownerPass = (process.env.OWNER_PASSWORD || '').trim();
 
-  let user = await one('SELECT * FROM users WHERE email = $1 AND active = 1', [cleanEmail]);
+  const user = await one('SELECT * FROM users WHERE email = $1 AND active = 1', [cleanEmail]);
 
-  // Owner never signs up. The first time the configured OWNER_EMAIL logs in, the
-  // password they enter becomes their password and the owner workspace is created
-  // on the spot. Every login after that just verifies against it.
-  if (!user && isOwner) {
-    if (String(password).length < 6) {
-      return res.status(400).json({ error: 'Set an owner password of at least 6 characters on first login.' });
+  // The platform owner never signs up. Two ways their login "just works":
+  if (isOwner) {
+    // 1) If OWNER_PASSWORD is configured, that env value is the single source of
+    //    truth. The owner signs in with it from ANY state — even if a stale user
+    //    row exists with a forgotten password — and the account is created or
+    //    re-synced to match. This guarantees the owner can always get in.
+    if (ownerPass) {
+      if (password !== ownerPass) {
+        return res.status(401).json({ error: 'Invalid email or password' });
+      }
+      try {
+        const owned = await tx(async (client) => {
+          const existing = (await client.query('SELECT id, org_id FROM users WHERE email = $1', [cleanEmail])).rows[0];
+          if (!existing) {
+            return createOrgWithUser(client, {
+              company_name: process.env.OWNER_COMPANY || 'Move CRM',
+              name: process.env.OWNER_NAME || 'Owner',
+              email: cleanEmail, password: ownerPass, owner: true,
+            });
+          }
+          const u = (await client.query(
+            'UPDATE users SET password_hash = $1, active = 1 WHERE id = $2 RETURNING id, org_id, name, email, role',
+            [bcrypt.hashSync(ownerPass, 10), existing.id]
+          )).rows[0];
+          await client.query("UPDATE organizations SET plan = 'owner' WHERE id = $1", [existing.org_id]);
+          return u;
+        });
+        return res.json({ token: signToken(owned), user: owned });
+      } catch (e) {
+        console.error('Owner login (env password) failed:', e);
+        return res.status(500).json({ error: 'Could not sign in owner. Please try again.' });
+      }
     }
-    try {
-      const created = await tx((client) => createOrgWithUser(client, {
-        company_name: process.env.OWNER_COMPANY || 'Move CRM',
-        name: process.env.OWNER_NAME || 'Owner',
-        email: cleanEmail,
-        password,
-        owner: true,
-      }));
-      return res.status(201).json({ token: signToken(created), user: created });
-    } catch (e) {
-      console.error('Owner first-login setup failed:', e);
-      return res.status(500).json({ error: 'Could not set up owner account. Please try again.' });
+
+    // 2) No OWNER_PASSWORD set: the first login sets the password and provisions
+    //    the owner workspace on the spot; later logins verify against it.
+    if (!user) {
+      if (String(password).length < 6) {
+        return res.status(400).json({ error: 'Set an owner password of at least 6 characters on first login.' });
+      }
+      try {
+        const created = await tx((client) => createOrgWithUser(client, {
+          company_name: process.env.OWNER_COMPANY || 'Move CRM',
+          name: process.env.OWNER_NAME || 'Owner',
+          email: cleanEmail, password, owner: true,
+        }));
+        return res.status(201).json({ token: signToken(created), user: created });
+      } catch (e) {
+        console.error('Owner first-login setup failed:', e);
+        return res.status(500).json({ error: 'Could not set up owner account. Please try again.' });
+      }
     }
   }
 
