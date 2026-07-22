@@ -27,7 +27,12 @@ async function createOrgWithUser(client, { company_name, name, email, password, 
      VALUES ($1, $2, $3, $4) RETURNING id`,
     [company_name, key, plan, owner ? null : new Date(Date.now() + 14 * 864e5).toISOString()]
   )).rows[0];
-  await client.query('INSERT INTO websites (org_id, name, public_key) VALUES ($1, $2, $3)', [org.id, 'Main Website', key]);
+  // Lead-capture websites are a paid product. Only the owner gets one up front;
+  // trial/self-serve companies start with zero and must purchase a plan, which
+  // then provisions their first website (see ensureSchema backfill).
+  if (owner) {
+    await client.query('INSERT INTO websites (org_id, name, public_key) VALUES ($1, $2, $3)', [org.id, 'Main Website', key]);
+  }
   const u = (await client.query(
     'INSERT INTO users (org_id, name, email, password_hash, role) VALUES ($1,$2,$3,$4,$5) RETURNING id, org_id, name, email, role',
     [org.id, name, email, bcrypt.hashSync(password, 10), 'admin']

@@ -144,6 +144,16 @@ function LeadCapture() {
             address). If a form ever says “refused to connect”, you copied a temporary preview link —
             always copy from this page on your real site address.
           </div>
+          {websites.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '26px 16px', border: '1px dashed var(--border)', borderRadius: 10, background: '#f8fafc' }}>
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>🔒 Lead capture is a paid feature</div>
+              <p className="muted" style={{ marginTop: 0, marginBottom: 14 }}>
+                Your hosted quote form, embeddable widget and lead webhooks unlock when you purchase a plan.
+                Your CRM, pipeline, estimating and billing all work during your trial.
+              </p>
+              <Link to="/billing" className="btn primary">See plans</Link>
+            </div>
+          )}
           {websites.map((w) => {
             const formUrl = `${origin}/quote/${w.public_key}`;
             const apiUrl = `${origin}/api/public/lead/${w.public_key}`;
@@ -178,14 +188,20 @@ function LeadCapture() {
             <li>Buy a phone number (Phone Numbers → Buy a Number — covered by trial credit)</li>
             <li>Open the number → under <b>Voice Configuration</b>, set <b>"A call comes in"</b> to <b>Webhook</b>, method <b>HTTP POST</b>, and paste this URL:</li>
           </ol>
-          <div className="row spread">
-            <Code>{voiceUrl}</Code>
-            <CopyBtn label="voice" text={voiceUrl} />
-          </div>
-          <p className="muted" style={{ marginBottom: 0 }}>
-            That's it — call your new number to test. The call, the recording, and a new lead will
-            appear in the CRM within seconds. (A number costs about $1/month after trial credit.)
-          </p>
+          {voiceKey ? (
+            <>
+              <div className="row spread">
+                <Code>{voiceUrl}</Code>
+                <CopyBtn label="voice" text={voiceUrl} />
+              </div>
+              <p className="muted" style={{ marginBottom: 0 }}>
+                That's it — call your new number to test. The call, the recording, and a new lead will
+                appear in the CRM within seconds. (A number costs about $1/month after trial credit.)
+              </p>
+            </>
+          ) : (
+            <div className="muted">📞 Phone lead-capture unlocks with a paid plan. <Link to="/billing">See plans</Link>.</div>
+          )}
         </div>
       </div>
 
