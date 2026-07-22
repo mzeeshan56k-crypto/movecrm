@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { q, one, tx } from '../db.js';
 import { requireRole } from '../auth.js';
+import { seedDemoData } from '../seed.js';
 
 const router = Router();
 
@@ -74,6 +75,25 @@ router.post('/reset', requireRole('admin'), async (req, res) => {
   } catch (e) {
     console.error('Reset failed:', e);
     res.status(500).json({ error: 'Could not reset workspace.' });
+  }
+});
+
+// Load a full set of realistic demo data (customers, a pipeline across every
+// stage, dispatch assignments, invoices/payments, reviews, tasks and calls) so
+// the product can be shown to prospective clients. Admin-only. Refuses if the
+// workspace already has customer data, to avoid piling demo data onto real data
+// (use "Reset workspace" first).
+router.post('/seed-demo', requireRole('admin'), async (req, res) => {
+  try {
+    const existing = await one('SELECT COUNT(*)::int AS n FROM customers WHERE org_id = $1', [req.orgId]);
+    if (existing.n > 0 && !req.body?.force) {
+      return res.status(409).json({ error: 'This workspace already has data. Reset the workspace first, then load demo data.' });
+    }
+    const result = await tx((client) => seedDemoData(client, req.orgId, req.user.id));
+    res.status(201).json({ ok: true, ...result });
+  } catch (e) {
+    console.error('Seed demo failed:', e);
+    res.status(500).json({ error: 'Could not load demo data. Please try again.' });
   }
 });
 
