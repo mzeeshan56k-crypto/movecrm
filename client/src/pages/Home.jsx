@@ -36,7 +36,7 @@ const WHY = [
   { icon: Wallet, title: 'Half the price', desc: 'Everything the big moving CRM platforms charge a premium for, at roughly half the budget. More margin stays in your pocket.' },
   { icon: Layers, title: 'One app, not ten', desc: 'Pipeline, estimating, dispatch, crews, billing, reviews and reporting live together. No stitching tools that do not talk to each other.' },
   { icon: Plug, title: 'Leads flow in on their own', desc: 'A hosted quote page, embeddable form, webhook and phone answering turn website visits and calls into leads automatically.' },
-  { icon: Gauge, title: 'Live in minutes', desc: 'Self serve signup provisions your workspace, tariff and lead sources instantly. Send your first quote the same afternoon.' },
+  { icon: Gauge, title: 'Guided setup, live fast', desc: 'After a short demo we set up your workspace, tariff and lead sources with you, so you can send your first quote the same day.' },
   { icon: Star, title: 'Reputation built in', desc: 'Finished jobs auto request reviews and route happy customers to Google, with no extra reputation tool to buy.' },
   { icon: Truck, title: 'Made for movers only', desc: 'Move sizes, cubic feet, crews, trucks, long distance versus local. The language and workflow of a moving company, not generic sales software.' },
 ];
@@ -50,7 +50,7 @@ const DEMO_POINTS = [
 
 const FAQS = [
   { q: 'How is Movers CRM cheaper than other moving CRMs?', a: 'We built Movers CRM lean and pass the savings on. You get the same core toolkit the established platforms sell, pipeline, estimating, dispatch, billing and reviews, for roughly half the monthly cost, with no setup fees and no long contracts.' },
-  { q: 'Do I need a credit card to start?', a: 'No. Every company starts on a 14 day free trial with no credit card. Add a payment method only when you decide to keep going.' },
+  { q: 'How do I get started?', a: 'Book a quick demo. We set up your workspace for you and walk you through it, so you start with the right plan and a guided onboarding rather than a self-serve sign-up form.' },
   { q: 'Is my company data private?', a: 'Yes. Movers CRM is fully multi tenant, so every record is scoped to your organization and no other company can ever see your leads, customers or jobs.' },
   { q: 'Can I capture leads from my existing website?', a: 'Absolutely. Each company gets a hosted quote page, an embeddable form for your site, and a webhook for Zapier or lead providers. Inbound phone calls can be answered and turned into leads too.' },
   { q: 'What kinds of moves does it handle?', a: 'Local, long distance, commercial, storage and labor only jobs, with move sizes, cubic feet inventory, crews and trucks built for the way movers actually work.' },
@@ -105,9 +105,9 @@ export default function Home() {
             <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn primary lp-btn-lg lp-btn-glow">
               <CalendarClock size={18} /> Book a free demo
             </a>
-            <Link to="/signup" className="btn lp-btn-lg lp-btn-ghost">Start free <ArrowRight size={18} /></Link>
+            <a href="#features" className="btn lp-btn-lg lp-btn-ghost">See how it works <ArrowRight size={18} /></a>
           </div>
-          <div className="lp-trust lp-reveal lp-d3"><Check size={15} /> 14 day free trial, no credit card, cancel any time</div>
+          <div className="lp-trust lp-reveal lp-d3"><Check size={15} /> Personalized setup around your business, no pressure</div>
 
           {/* Product mock */}
           <div className="lp-mock lp-reveal lp-d4">
@@ -234,7 +234,7 @@ export default function Home() {
               <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn primary lp-btn-lg">
                 <CalendarClock size={18} /> Book a demo
               </a>
-              <Link to="/signup" className="btn lp-btn-lg">Start free <ArrowRight size={18} /></Link>
+              <a href="#faq" className="btn lp-btn-lg">Read the FAQ <ArrowRight size={18} /></a>
             </div>
           </div>
         </div>
@@ -274,7 +274,7 @@ export default function Home() {
                 <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn primary lp-btn-lg lp-btn-glow" style={{ width: '100%', justifyContent: 'center' }}>
                   Book your demo now <ArrowRight size={18} />
                 </a>
-                <div className="lp-demo-note"><Check size={14} /> Prefer to explore first? <Link to="/signup">Start free</Link></div>
+                <div className="lp-demo-note"><Check size={14} /> Prefer to learn more first? <a href="#faq">Read the FAQ</a></div>
               </div>
             </div>
           </div>
@@ -307,7 +307,7 @@ export default function Home() {
             <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn primary lp-btn-lg lp-btn-glow">
               <CalendarClock size={18} /> Book your free demo
             </a>
-            <Link to="/signup" className="btn lp-btn-lg lp-btn-ghost">Or start free <ArrowRight size={18} /></Link>
+            <a href="#features" className="btn lp-btn-lg lp-btn-ghost">Or see features <ArrowRight size={18} /></a>
           </div>
         </div>
       </section>

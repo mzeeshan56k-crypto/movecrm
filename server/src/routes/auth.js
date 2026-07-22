@@ -84,10 +84,16 @@ router.post('/owner/setup', async (req, res) => {
   }
 });
 
-// Self-serve signup: creates a new organization + its first admin user.
-// New companies start with a clean workspace (only their default config), so
-// everything they see from here on is their own real data.
+// Public self-serve signup is disabled: this is an owner-operated product, so
+// accounts are only created after a sales/demo conversation. Anyone trying to
+// self-register is pointed to book a demo instead. (Set ALLOW_PUBLIC_SIGNUP=true
+// to re-enable open signups if the business model ever changes.)
+const publicSignupAllowed = () => (process.env.ALLOW_PUBLIC_SIGNUP || '').toLowerCase() === 'true';
+
 router.post('/signup', async (req, res) => {
+  if (!publicSignupAllowed()) {
+    return res.status(403).json({ error: 'Public signup is not available. Please book a demo to get started.' });
+  }
   const { company_name, name, email, password } = req.body || {};
   if (!company_name || !name || !email || !password) {
     return res.status(400).json({ error: 'Company name, your name, email and password are all required' });

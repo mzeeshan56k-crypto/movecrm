@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Truck } from 'lucide-react';
 import { useAuth } from '../lib/auth.jsx';
 
@@ -41,7 +40,7 @@ export default function Login() {
           {busy ? 'Signing in…' : 'Sign in'}
         </button>
         <p className="muted" style={{ fontSize: 13, marginTop: 16, textAlign: 'center' }}>
-          New here? <Link to="/signup">Create your company account</Link>
+          Want an account? <a href="https://calendly.com/mzseoconsultant/30min" target="_blank" rel="noreferrer">Book a demo to get started</a>
         </p>
       </form>
     </div>
