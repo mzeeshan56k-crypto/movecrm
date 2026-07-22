@@ -26,7 +26,7 @@ export default function Login() {
   return (
     <div className="login-page">
       <form className="login-card" onSubmit={submit}>
-        <div className="logo"><Truck size={26} color="#2563eb" /> MoveCRM</div>
+        <div className="logo"><Truck size={26} color="#2563eb" /> Move CRM</div>
         <p className="muted" style={{ marginTop: 0 }}>Sign in to your moving company workspace</p>
         <label className="field">
           <span>Email</span>
@@ -42,6 +42,9 @@ export default function Login() {
         </button>
         <p className="muted" style={{ fontSize: 13, marginTop: 16, textAlign: 'center' }}>
           New here? <Link to="/signup">Create your company account</Link>
+        </p>
+        <p className="muted" style={{ fontSize: 12, marginTop: 10, textAlign: 'center' }}>
+          Platform owner? <Link to="/owner">Set up your password</Link>
         </p>
       </form>
     </div>

@@ -17,6 +17,65 @@ async function isOwnerEmail(client, cleanEmail) {
   return count === 0;
 }
 
+// Creates a fresh organization + its first admin user, provisions default config.
+// Shared by self-serve signup and the one-time owner setup.
+async function createOrgWithUser(client, { company_name, name, email, password, owner }) {
+  const plan = owner ? 'owner' : 'trial';
+  const key = newPublicKey();
+  const org = (await client.query(
+    `INSERT INTO organizations (name, public_key, plan, trial_ends_at)
+     VALUES ($1, $2, $3, $4) RETURNING id`,
+    [company_name, key, plan, owner ? null : new Date(Date.now() + 14 * 864e5).toISOString()]
+  )).rows[0];
+  await client.query('INSERT INTO websites (org_id, name, public_key) VALUES ($1, $2, $3)', [org.id, 'Main Website', key]);
+  const u = (await client.query(
+    'INSERT INTO users (org_id, name, email, password_hash, role) VALUES ($1,$2,$3,$4,$5) RETURNING id, org_id, name, email, role',
+    [org.id, name, email, bcrypt.hashSync(password, 10), 'admin']
+  )).rows[0];
+  await provisionOrg(client, org.id, company_name);
+  return u;
+}
+
+const ownerEmail = () => (process.env.OWNER_EMAIL || '').toLowerCase().trim();
+
+// The platform owner never has to fill in a signup form. Instead they claim
+// their pre-designated OWNER_EMAIL by setting a password once, then log in.
+// This endpoint tells the UI whether owner setup applies and if it's still open.
+router.get('/owner', async (req, res) => {
+  const email = ownerEmail();
+  if (!email) return res.json({ configured: false });
+  const existing = await one('SELECT id FROM users WHERE email = $1', [email]);
+  res.json({ configured: true, claimed: !!existing, email });
+});
+
+// One-time owner activation: set the password for OWNER_EMAIL and get logged in.
+// Once claimed, this is closed — the owner just signs in from then on.
+router.post('/owner/setup', async (req, res) => {
+  const email = ownerEmail();
+  if (!email) return res.status(400).json({ error: 'Owner access is not configured on this server.' });
+  const { password } = req.body || {};
+  if (!password || String(password).length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  }
+  const existing = await one('SELECT id FROM users WHERE email = $1', [email]);
+  if (existing) {
+    return res.status(409).json({ error: 'Owner account is already set up. Please sign in with your password.' });
+  }
+  try {
+    const user = await tx((client) => createOrgWithUser(client, {
+      company_name: process.env.OWNER_COMPANY || 'Move CRM',
+      name: process.env.OWNER_NAME || 'Owner',
+      email,
+      password,
+      owner: true,
+    }));
+    res.status(201).json({ token: signToken(user), user });
+  } catch (e) {
+    console.error('Owner setup failed:', e);
+    res.status(500).json({ error: 'Could not set up owner account. Please try again.' });
+  }
+});
+
 // Self-serve signup: creates a new organization + its first admin user.
 // New companies start with a clean workspace (only their default config), so
 // everything they see from here on is their own real data.
@@ -35,20 +94,7 @@ router.post('/signup', async (req, res) => {
   try {
     const user = await tx(async (client) => {
       const owner = await isOwnerEmail(client, cleanEmail);
-      const plan = owner ? 'owner' : 'trial';
-      const key = newPublicKey();
-      const org = (await client.query(
-        `INSERT INTO organizations (name, public_key, plan, trial_ends_at)
-         VALUES ($1, $2, $3, $4) RETURNING id`,
-        [company_name, key, plan, owner ? null : new Date(Date.now() + 14 * 864e5).toISOString()]
-      )).rows[0];
-      await client.query('INSERT INTO websites (org_id, name, public_key) VALUES ($1, $2, $3)', [org.id, 'Main Website', key]);
-      const u = (await client.query(
-        'INSERT INTO users (org_id, name, email, password_hash, role) VALUES ($1,$2,$3,$4,$5) RETURNING id, org_id, name, email, role',
-        [org.id, name, cleanEmail, bcrypt.hashSync(password, 10), 'admin']
-      )).rows[0];
-      await provisionOrg(client, org.id, company_name);
-      return u;
+      return createOrgWithUser(client, { company_name, name, email: cleanEmail, password, owner });
     });
     res.status(201).json({ token: signToken(user), user });
   } catch (e) {
