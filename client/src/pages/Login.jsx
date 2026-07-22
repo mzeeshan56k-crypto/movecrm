@@ -43,9 +43,6 @@ export default function Login() {
         <p className="muted" style={{ fontSize: 13, marginTop: 16, textAlign: 'center' }}>
           New here? <Link to="/signup">Create your company account</Link>
         </p>
-        <p className="muted" style={{ fontSize: 12, marginTop: 10, textAlign: 'center' }}>
-          Platform owner? <Link to="/owner">Set up your password</Link>
-        </p>
       </form>
     </div>
   );
