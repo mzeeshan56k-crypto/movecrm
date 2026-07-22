@@ -43,9 +43,16 @@ const ownerEmail = () => (process.env.OWNER_EMAIL || '').toLowerCase().trim();
 // This endpoint tells the UI whether owner setup applies and if it's still open.
 router.get('/owner', async (req, res) => {
   const email = ownerEmail();
-  if (!email) return res.json({ configured: false });
-  const existing = await one('SELECT id FROM users WHERE email = $1', [email]);
-  res.json({ configured: true, claimed: !!existing, email });
+  const passwordConfigured = !!(process.env.OWNER_PASSWORD || '').trim();
+  if (!email) return res.json({ configured: false, passwordConfigured });
+  const existing = await one('SELECT id, active FROM users WHERE email = $1', [email]);
+  res.json({
+    configured: true,
+    passwordConfigured,
+    claimed: !!existing,
+    active: existing ? existing.active : null,
+    email,
+  });
 });
 
 // One-time owner activation: set the password for OWNER_EMAIL and get logged in.
