@@ -25,7 +25,7 @@ export default function Signup() {
   return (
     <div className="login-page">
       <form className="login-card" onSubmit={submit}>
-        <div className="logo"><Truck size={26} color="#2563eb" /> Move CRM</div>
+        <div className="logo"><Truck size={26} color="#2563eb" /> Movers CRM</div>
         <p className="muted" style={{ marginTop: 0 }}>Start your moving company workspace — free.</p>
 
         <label className="field">

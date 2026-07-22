@@ -26,6 +26,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const app = express();
 
 app.use(cors());
+
+// Baseline security headers on every response. We intentionally do NOT set
+// X-Frame-Options here because the public lead-capture form is meant to be
+// embedded in customers' own sites (framing is allowed via CSP frame-ancestors).
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-DNS-Prefetch-Control', 'off');
+  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+  res.setHeader('Strict-Transport-Security', 'max-age=15552000; includeSubDomains');
+  next();
+});
+
 // Capture the raw body so the Stripe webhook can verify its signature.
 app.use(express.json({ limit: '2mb', verify: (req, _res, buf) => { req.rawBody = buf; } }));
 app.use(express.urlencoded({ extended: false })); // Twilio + plain HTML forms post form-encoded

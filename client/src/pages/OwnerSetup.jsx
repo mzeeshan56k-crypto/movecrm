@@ -38,7 +38,7 @@ export default function OwnerSetup() {
   const card = (children) => (
     <div className="login-page">
       <div className="login-card">
-        <div className="logo"><Truck size={26} color="#2563eb" /> Move CRM</div>
+        <div className="logo"><Truck size={26} color="#2563eb" /> Movers CRM</div>
         {children}
       </div>
     </div>
@@ -67,7 +67,7 @@ export default function OwnerSetup() {
           <ShieldCheck size={18} color="#22c55e" /> Owner account is ready
         </p>
         <p className="muted" style={{ marginTop: 4 }}>
-          Your password is already set. Just sign in with <strong>{status.email}</strong>.
+          Your password is already set. Just sign in with your owner email.
         </p>
         <Link to="/login" className="btn primary" style={{ width: '100%', justifyContent: 'center', marginTop: 12 }}>
           Go to sign in
@@ -82,8 +82,8 @@ export default function OwnerSetup() {
         <ShieldCheck size={18} color="#2563eb" /> Set your owner password
       </p>
       <p className="muted" style={{ marginTop: 4 }}>
-        Welcome, owner. No signup needed — just choose a password once for{' '}
-        <strong>{status.email}</strong>, then you can log in any time.
+        Welcome, owner. No signup needed. Just choose a password once for your
+        configured owner email, then you can log in any time.
       </p>
       <label className="field">
         <span>New password</span>

@@ -12,7 +12,9 @@ export const PLANS = {
   },
   trial: {
     key: 'trial', label: 'Free Trial', price: 0, trial: true, hidden: true,
-    websites: 5, users: 25,
+    // Trials get their CRM workspace but cannot self-provision lead-capture
+    // websites — those are sold by us and unlock on a paid plan.
+    websites: 1, users: 25,
     blurb: 'Explore everything free for 14 days.',
     features: ['Full access during your trial'],
   },

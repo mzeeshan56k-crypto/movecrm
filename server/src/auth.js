@@ -1,6 +1,25 @@
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
-export const JWT_SECRET = process.env.JWT_SECRET || 'movecrm-dev-secret-change-me';
+// Never ship a publicly-known signing key. Prefer an explicit JWT_SECRET. If it
+// is not set, derive a strong, stable secret from other server-only secrets
+// (the database URL + owner email) so login tokens can't be forged with the
+// value that lives in this repo. Only falls back to the dev key with no DB at all.
+function resolveJwtSecret() {
+  if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
+  const seed = process.env.DATABASE_URL || '';
+  if (seed) {
+    return crypto.createHash('sha256')
+      .update('moverscrm:' + seed + ':' + (process.env.OWNER_EMAIL || ''))
+      .digest('hex');
+  }
+  if (process.env.NODE_ENV === 'production') {
+    console.warn('[security] JWT_SECRET and DATABASE_URL are both unset — using an insecure dev key. Set JWT_SECRET.');
+  }
+  return 'movecrm-dev-secret-change-me';
+}
+
+export const JWT_SECRET = resolveJwtSecret();
 
 export function signToken(user) {
   return jwt.sign(

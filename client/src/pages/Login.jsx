@@ -26,7 +26,7 @@ export default function Login() {
   return (
     <div className="login-page">
       <form className="login-card" onSubmit={submit}>
-        <div className="logo"><Truck size={26} color="#2563eb" /> Move CRM</div>
+        <div className="logo"><Truck size={26} color="#2563eb" /> Movers CRM</div>
         <p className="muted" style={{ marginTop: 0 }}>Sign in to your moving company workspace</p>
         <label className="field">
           <span>Email</span>

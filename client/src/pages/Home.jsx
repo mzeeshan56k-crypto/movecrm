@@ -43,18 +43,18 @@ const WHY = [
 
 const DEMO_POINTS = [
   { icon: Truck, title: 'Set up around your business', desc: 'We tailor the walkthrough to your services, crews and pricing, not a canned demo reel.' },
-  { icon: MessageSquare, title: 'Every question answered live', desc: 'Ask anything about switching, importing your data, or how a workflow maps into Move CRM.' },
+  { icon: MessageSquare, title: 'Every question answered live', desc: 'Ask anything about switching, importing your data, or how a workflow maps into Movers CRM.' },
   { icon: Clock, title: 'Just 30 minutes', desc: 'A focused, no pressure session. Come see it run, then decide in your own time.' },
   { icon: Sparkles, title: 'Leave with a clear plan', desc: 'You walk away knowing exactly how to switch in days, and what it saves you every month.' },
 ];
 
 const FAQS = [
-  { q: 'How is Move CRM cheaper than other moving CRMs?', a: 'We built Move CRM lean and pass the savings on. You get the same core toolkit the established platforms sell, pipeline, estimating, dispatch, billing and reviews, for roughly half the monthly cost, with no setup fees and no long contracts.' },
+  { q: 'How is Movers CRM cheaper than other moving CRMs?', a: 'We built Movers CRM lean and pass the savings on. You get the same core toolkit the established platforms sell, pipeline, estimating, dispatch, billing and reviews, for roughly half the monthly cost, with no setup fees and no long contracts.' },
   { q: 'Do I need a credit card to start?', a: 'No. Every company starts on a 14 day free trial with no credit card. Add a payment method only when you decide to keep going.' },
-  { q: 'Is my company data private?', a: 'Yes. Move CRM is fully multi tenant, so every record is scoped to your organization and no other company can ever see your leads, customers or jobs.' },
+  { q: 'Is my company data private?', a: 'Yes. Movers CRM is fully multi tenant, so every record is scoped to your organization and no other company can ever see your leads, customers or jobs.' },
   { q: 'Can I capture leads from my existing website?', a: 'Absolutely. Each company gets a hosted quote page, an embeddable form for your site, and a webhook for Zapier or lead providers. Inbound phone calls can be answered and turned into leads too.' },
   { q: 'What kinds of moves does it handle?', a: 'Local, long distance, commercial, storage and labor only jobs, with move sizes, cubic feet inventory, crews and trucks built for the way movers actually work.' },
-  { q: 'How do I see it before committing?', a: 'Book a free 30 minute demo and we will walk through Move CRM set up around your exact workflow. It is the fastest way to know if it fits your business.' },
+  { q: 'How do I see it before committing?', a: 'Book a free 30 minute demo and we will walk through Movers CRM set up around your exact workflow. It is the fastest way to know if it fits your business.' },
 ];
 
 function Faq({ q, a }) {
@@ -76,9 +76,9 @@ export default function Home() {
       {/* Nav */}
       <header className="lp-nav">
         <div className="lp-container lp-nav-inner">
-          <Link to="/" className="lp-brand"><Truck size={24} /> Move CRM</Link>
+          <Link to="/" className="lp-brand"><Truck size={24} /> Movers CRM</Link>
           <nav className="lp-nav-links">
-            <a href="#why">Why Move CRM</a>
+            <a href="#why">Why Movers CRM</a>
             <a href="#features">Features</a>
             <a href="#story">Our Story</a>
             <a href="#faq">FAQ</a>
@@ -97,7 +97,7 @@ export default function Home() {
           <span className="lp-pill lp-reveal"><Zap size={13} /> The operating system for moving companies</span>
           <h1 className="lp-reveal lp-d1">Move faster.<br /><span className="lp-grad">Book more moves.</span></h1>
           <p className="lp-sub lp-reveal lp-d2">
-            Move CRM runs your whole moving company in one place: leads, estimates, dispatch,
+            Movers CRM runs your whole moving company in one place: leads, estimates, dispatch,
             crews, billing and reviews. Less busywork, more booked jobs, at about half the cost
             of the other platforms.
           </p>
@@ -114,7 +114,7 @@ export default function Home() {
             <div className="lp-mock-bar"><span /><span /><span /></div>
             <div className="lp-mock-body">
               <div className="lp-mock-side">
-                <div className="lp-mock-logo"><Truck size={16} /> Move CRM</div>
+                <div className="lp-mock-logo"><Truck size={16} /> Movers CRM</div>
                 {['Dashboard', 'Pipeline', 'Jobs', 'Dispatch', 'Billing'].map((s, i) => (
                   <div key={s} className={'lp-mock-navitem' + (i === 0 ? ' on' : '')}>{s}</div>
                 ))}
@@ -161,12 +161,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Move CRM */}
+      {/* Why Movers CRM */}
       <section id="why" className="lp-section">
         <div className="lp-container">
           <div className="lp-section-head">
-            <span className="lp-eyebrow">Why Move CRM</span>
-            <h2>Why moving companies choose Move CRM</h2>
+            <span className="lp-eyebrow">Why Movers CRM</span>
+            <h2>Why moving companies choose Movers CRM</h2>
             <p>The full toolkit the big platforms sell, without the enterprise price tag or the ten tool tangle.</p>
           </div>
           <div className="lp-why-grid">
@@ -221,7 +221,7 @@ export default function Home() {
               were priced for the giants, not the growing crew doing the actual moves.
             </p>
             <p>
-              So I set out to build Move CRM: one place where a moving company can manage all of
+              So I set out to build Movers CRM: one place where a moving company can manage all of
               its data, leads, estimates, dispatch, crews, billing and reviews, the way it
               actually works day to day, at almost half the budget of the other platforms out there.
             </p>
@@ -245,7 +245,7 @@ export default function Home() {
         <div className="lp-container">
           <div className="lp-section-head">
             <span className="lp-eyebrow">See it live</span>
-            <h2>The fastest way to see if Move CRM fits</h2>
+            <h2>The fastest way to see if Movers CRM fits</h2>
             <p>Book a free 30 minute demo. We set it up around your business and show you exactly how it books more moves for less.</p>
           </div>
           <div className="lp-demo">
@@ -301,7 +301,7 @@ export default function Home() {
         <div className="lp-grid-overlay" />
         <div className="lp-container lp-cta-inner">
           <span className="lp-pill"><ShieldCheck size={13} /> No card, no risk, no pressure</span>
-          <h2>See Move CRM run your business in 30 minutes</h2>
+          <h2>See Movers CRM run your business in 30 minutes</h2>
           <p>Book a live demo and we will set it up around your exact workflow. Come see how much simpler and cheaper running your moving company can be.</p>
           <div className="lp-hero-cta">
             <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn primary lp-btn-lg lp-btn-glow">
@@ -315,16 +315,16 @@ export default function Home() {
       {/* Footer */}
       <footer className="lp-footer">
         <div className="lp-container lp-footer-inner">
-          <div className="lp-brand"><Truck size={20} /> Move CRM</div>
+          <div className="lp-brand"><Truck size={20} /> Movers CRM</div>
           <div className="lp-footer-links">
-            <a href="#why">Why Move CRM</a>
+            <a href="#why">Why Movers CRM</a>
             <a href="#features">Features</a>
             <a href="#story">Our Story</a>
             <a href="#faq">FAQ</a>
             <a href={CALENDLY} target="_blank" rel="noreferrer">Book a demo</a>
             <Link to="/login">Sign in</Link>
           </div>
-          <div className="lp-footer-copy">© {new Date().getFullYear()} Move CRM. All rights reserved.</div>
+          <div className="lp-footer-copy">© {new Date().getFullYear()} Movers CRM. All rights reserved.</div>
         </div>
       </footer>
     </div>

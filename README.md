@@ -1,4 +1,4 @@
-# MoveCRM — Multi-Company SaaS CRM for Moving Companies
+# Movers CRM — Multi-Company SaaS CRM for Moving Companies
 
 A complete **SaaS** CRM for moving companies modeled on SmartMoving: any company can
 self-sign-up and gets its own private, isolated workspace — sales pipeline, estimating,
@@ -92,7 +92,11 @@ cd ../server && npm install && npm run migrate && npm start
 Environment variables:
 
 - `DATABASE_URL` — PostgreSQL connection string **(required)**
-- `JWT_SECRET` — secret for signing logins **(set this in production)**
+- `JWT_SECRET` — secret for signing logins **(set this in production).** If unset, a strong
+  secret is derived from `DATABASE_URL` so tokens can't be forged with the value in this repo,
+  but setting an explicit `JWT_SECRET` is still recommended.
+- `PUBLIC_BASE_URL` — your live domain, e.g. `https://moverscrm.org`. Used so hosted quote
+  forms, embed snippets and webhooks always point at your real domain instead of a preview URL.
 - `OWNER_EMAIL` — this email gets free unlimited owner access. The owner does **not**
   sign up like a regular company. Just go to `/login` and sign in with this email.
 - `OWNER_PASSWORD` — **recommended.** When set, this is the owner's password: signing in

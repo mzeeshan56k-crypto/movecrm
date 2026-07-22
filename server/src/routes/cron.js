@@ -34,7 +34,7 @@ async function buildReport(orgId, periodDays, label) {
         ${row('Moves completed', m.completed)}
         ${row('Average review rating', m.avg_rating ? m.avg_rating + ' ★' : '—')}
       </table>
-      <p style="color:#999;font-size:12px;margin-top:18px">Sent automatically by MoveCRM. Change your report schedule in Reports → Email reports.</p>
+      <p style="color:#999;font-size:12px;margin-top:18px">Sent automatically by Movers CRM. Change your report schedule in Reports → Email reports.</p>
     </div>`;
   return { subject: `${org.name}: your ${label.toLowerCase()} business report`, html };
 }

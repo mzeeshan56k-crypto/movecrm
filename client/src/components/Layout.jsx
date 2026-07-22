@@ -36,7 +36,7 @@ export default function Layout() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="brand"><Truck size={22} /> Move CRM</div>
+        <div className="brand"><Truck size={22} /> Movers CRM</div>
         {organization && (
           <div style={{ padding: '8px 18px 12px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
             <div style={{ color: '#fff', fontSize: 13, fontWeight: 700 }}>{organization.name}</div>

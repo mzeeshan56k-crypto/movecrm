@@ -45,14 +45,10 @@ router.get('/owner', async (req, res) => {
   const email = ownerEmail();
   const passwordConfigured = !!(process.env.OWNER_PASSWORD || '').trim();
   if (!email) return res.json({ configured: false, passwordConfigured });
-  const existing = await one('SELECT id, active FROM users WHERE email = $1', [email]);
-  res.json({
-    configured: true,
-    passwordConfigured,
-    claimed: !!existing,
-    active: existing ? existing.active : null,
-    email,
-  });
+  const existing = await one('SELECT id FROM users WHERE email = $1', [email]);
+  // Deliberately does NOT return the owner's email address — it must not be
+  // disclosed publicly. Only booleans the setup UI needs.
+  res.json({ configured: true, passwordConfigured, claimed: !!existing });
 });
 
 // One-time owner activation: set the password for OWNER_EMAIL and get logged in.
@@ -70,7 +66,7 @@ router.post('/owner/setup', async (req, res) => {
   }
   try {
     const user = await tx((client) => createOrgWithUser(client, {
-      company_name: process.env.OWNER_COMPANY || 'Move CRM',
+      company_name: process.env.OWNER_COMPANY || 'Movers CRM',
       name: process.env.OWNER_NAME || 'Owner',
       email,
       password,
@@ -135,7 +131,7 @@ router.post('/login', async (req, res) => {
           const existing = (await client.query('SELECT id, org_id FROM users WHERE email = $1', [cleanEmail])).rows[0];
           if (!existing) {
             return createOrgWithUser(client, {
-              company_name: process.env.OWNER_COMPANY || 'Move CRM',
+              company_name: process.env.OWNER_COMPANY || 'Movers CRM',
               name: process.env.OWNER_NAME || 'Owner',
               email: cleanEmail, password: ownerPass, owner: true,
             });
@@ -162,7 +158,7 @@ router.post('/login', async (req, res) => {
       }
       try {
         const created = await tx((client) => createOrgWithUser(client, {
-          company_name: process.env.OWNER_COMPANY || 'Move CRM',
+          company_name: process.env.OWNER_COMPANY || 'Movers CRM',
           name: process.env.OWNER_NAME || 'Owner',
           email: cleanEmail, password, owner: true,
         }));
