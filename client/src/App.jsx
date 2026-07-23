@@ -7,8 +7,6 @@ import Signup from './pages/Signup.jsx';
 import OwnerSetup from './pages/OwnerSetup.jsx';
 import PublicQuote from './pages/PublicQuote.jsx';
 import PublicReview from './pages/PublicReview.jsx';
-import SmartMovingAlternative from './pages/marketing/SmartMovingAlternative.jsx';
-import BestMovingCRM from './pages/marketing/BestMovingCRM.jsx';
 import Blog from './pages/marketing/Blog.jsx';
 import BlogPost from './pages/marketing/BlogPost.jsx';
 import Dashboard from './pages/Dashboard.jsx';
@@ -36,11 +34,12 @@ export default function App() {
       <Route path="/quote/:publicKey" element={<PublicQuote />} />
       <Route path="/review/:token" element={<PublicReview />} />
 
-      {/* Public marketing + blog pages (indexable, available to everyone) */}
-      <Route path="/smartmoving-alternative" element={<SmartMovingAlternative />} />
-      <Route path="/best-crm-for-moving-companies" element={<BestMovingCRM />} />
+      {/* Public blog (indexable, available to everyone) */}
       <Route path="/blog" element={<Blog />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
+      {/* Old standalone pages now live as blog posts; redirect to keep links working. */}
+      <Route path="/smartmoving-alternative" element={<Navigate to="/blog/smartmoving-alternative" replace />} />
+      <Route path="/best-crm-for-moving-companies" element={<Navigate to="/blog/best-crm-for-moving-companies" replace />} />
 
       {!user ? (
         <>

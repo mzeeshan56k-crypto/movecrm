@@ -12,8 +12,7 @@ export default function MarketingLayout({ children }) {
         <div className="lp-container lp-nav-inner">
           <Link to="/" className="lp-brand"><Truck size={24} /> Movers CRM</Link>
           <nav className="lp-nav-links">
-            <Link to="/best-crm-for-moving-companies">Best CRM</Link>
-            <Link to="/smartmoving-alternative">SmartMoving Alternative</Link>
+            <Link to="/">Home</Link>
             <Link to="/blog">Blog</Link>
             <Link to="/login">Sign in</Link>
             <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn primary lp-nav-cta">Book a demo</a>
@@ -28,8 +27,6 @@ export default function MarketingLayout({ children }) {
           <div className="lp-brand"><Truck size={20} /> Movers CRM</div>
           <div className="lp-footer-links">
             <Link to="/">Home</Link>
-            <Link to="/best-crm-for-moving-companies">Best CRM</Link>
-            <Link to="/smartmoving-alternative">SmartMoving Alternative</Link>
             <Link to="/blog">Blog</Link>
             <a href={CALENDLY} target="_blank" rel="noreferrer">Book a demo</a>
             <Link to="/login">Sign in</Link>
