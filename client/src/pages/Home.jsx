@@ -6,6 +6,8 @@ import {
   Wallet, Layers, Plug, Gauge, Heart, ChevronDown, Sparkles, Clock,
   CheckCircle2, MessageSquare, ShieldCheck,
 } from 'lucide-react';
+import PromoPopup from '../components/PromoPopup.jsx';
+import { useSeo } from '../lib/seo.js';
 
 const CALENDLY = 'https://calendly.com/mzseoconsultant/30min';
 
@@ -71,17 +73,24 @@ function Faq({ q, a }) {
 }
 
 export default function Home() {
+  useSeo({
+    title: 'Movers CRM | Affordable CRM For Moving Companies',
+    description:
+      'Affordable all-in-one CRM for moving companies. Capture leads, quote, dispatch, invoice and collect reviews at about half the cost. Book a demo.',
+    path: '/',
+  });
   return (
     <div className="landing">
+      <PromoPopup />
       {/* Nav */}
       <header className="lp-nav">
         <div className="lp-container lp-nav-inner">
           <Link to="/" className="lp-brand"><Truck size={24} /> Movers CRM</Link>
           <nav className="lp-nav-links">
-            <a href="#why">Why Movers CRM</a>
             <a href="#features">Features</a>
-            <a href="#story">Our Story</a>
-            <a href="#faq">FAQ</a>
+            <Link to="/best-crm-for-moving-companies">Best CRM</Link>
+            <Link to="/smartmoving-alternative">SmartMoving Alternative</Link>
+            <Link to="/blog">Blog</Link>
             <Link to="/login">Sign in</Link>
             <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn primary lp-nav-cta">Book a demo</a>
           </nav>
@@ -317,10 +326,10 @@ export default function Home() {
         <div className="lp-container lp-footer-inner">
           <div className="lp-brand"><Truck size={20} /> Movers CRM</div>
           <div className="lp-footer-links">
-            <a href="#why">Why Movers CRM</a>
             <a href="#features">Features</a>
-            <a href="#story">Our Story</a>
-            <a href="#faq">FAQ</a>
+            <Link to="/best-crm-for-moving-companies">Best CRM</Link>
+            <Link to="/smartmoving-alternative">SmartMoving Alternative</Link>
+            <Link to="/blog">Blog</Link>
             <a href={CALENDLY} target="_blank" rel="noreferrer">Book a demo</a>
             <Link to="/login">Sign in</Link>
           </div>
