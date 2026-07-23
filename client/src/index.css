@@ -570,6 +570,14 @@ input:focus, select:focus, textarea:focus { outline: 2px solid rgba(37, 99, 235,
 .mkt-prose ul, .blog-content ul { margin: 0 0 18px; padding-left: 4px; list-style: none; }
 .mkt-prose ul li, .blog-content ul li { position: relative; padding-left: 26px; margin-bottom: 9px; color: #334155; font-size: 16px; line-height: 1.6; }
 .mkt-prose ul li::before, .blog-content ul li::before { content: ""; position: absolute; left: 6px; top: 9px; width: 7px; height: 7px; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #6366f1); }
+/* Tables inside blog article bodies */
+.blog-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; margin: 8px 0 20px; }
+.blog-table { width: 100%; border-collapse: collapse; min-width: 520px; }
+.blog-table th { text-align: left; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); background: #f8fafc; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.blog-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 15px; color: #334155; }
+.blog-table tr:last-child td { border-bottom: none; }
+.blog-table td:nth-child(2) { font-weight: 600; color: #0f172a; }
+
 .mkt-check { list-style: none; padding: 0; margin: 0 0 18px; }
 .mkt-check li { display: flex; align-items: flex-start; gap: 10px; font-size: 16px; color: #334155; padding: 8px 0; }
 .mkt-check li svg { color: var(--success); flex: 0 0 auto; margin-top: 2px; }

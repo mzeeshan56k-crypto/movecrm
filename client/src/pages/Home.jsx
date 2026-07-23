@@ -88,8 +88,7 @@ export default function Home() {
           <Link to="/" className="lp-brand"><Truck size={24} /> Movers CRM</Link>
           <nav className="lp-nav-links">
             <a href="#features">Features</a>
-            <Link to="/best-crm-for-moving-companies">Best CRM</Link>
-            <Link to="/smartmoving-alternative">SmartMoving Alternative</Link>
+            <a href="#faq">FAQ</a>
             <Link to="/blog">Blog</Link>
             <Link to="/login">Sign in</Link>
             <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn primary lp-nav-cta">Book a demo</a>
@@ -327,8 +326,7 @@ export default function Home() {
           <div className="lp-brand"><Truck size={20} /> Movers CRM</div>
           <div className="lp-footer-links">
             <a href="#features">Features</a>
-            <Link to="/best-crm-for-moving-companies">Best CRM</Link>
-            <Link to="/smartmoving-alternative">SmartMoving Alternative</Link>
+            <a href="#faq">FAQ</a>
             <Link to="/blog">Blog</Link>
             <a href={CALENDLY} target="_blank" rel="noreferrer">Book a demo</a>
             <Link to="/login">Sign in</Link>
