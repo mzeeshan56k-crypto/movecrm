@@ -6,7 +6,7 @@ import { Field, Modal, Empty } from '../components/ui.jsx';
 import ImportData from '../components/ImportData.jsx';
 import { useAuth } from '../lib/auth.jsx';
 
-const TABS = ['Company', 'Import Data', 'Lead Capture & Phone', 'Lead Sources', 'Move Sizes', 'Services', 'Crew', 'Trucks', 'Users', 'Email Templates'];
+const TABS = ['Company', 'Import Data', 'Lead Capture & Phone', 'Integrations', 'Lead Sources', 'Move Sizes', 'Services', 'Crew', 'Trucks', 'Users', 'Email Templates'];
 
 export default function Settings() {
   // Remember the active tab in the URL hash so refresh / deep-links keep it.
@@ -32,6 +32,7 @@ export default function Settings() {
       {tab === 'Company' && <Company isAdmin={isAdmin} />}
       {tab === 'Import Data' && <ImportData />}
       {tab === 'Lead Capture & Phone' && <LeadCapture />}
+      {tab === 'Integrations' && <Integrations isAdmin={isAdmin} />}
       {tab === 'Lead Sources' && (
         <SimpleCrud path="/settings/lead-sources" isAdmin={isAdmin} fields={[
           { key: 'name', label: 'Name' },
@@ -233,6 +234,138 @@ function LeadCapture() {
             Optional fields: <code>move_date</code>, <code>move_size</code>, <code>origin_city</code>,
             <code> dest_city</code>, <code>message</code>.
           </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Integrations({ isAdmin }) {
+  const [data, setData] = useState(null);
+  const [copied, setCopied] = useState('');
+  const [wc, setWc] = useState({ api_token: '', api_secret: '', profile_id: '' });
+  const [busy, setBusy] = useState('');
+  const [msg, setMsg] = useState('');
+  const [err, setErr] = useState('');
+
+  const load = () => api('/integrations').then((d) => { setData(d); setWc((w) => ({ ...w, profile_id: d.whatconverts?.profile_id || '' })); }).catch((e) => setErr(e.message));
+  useEffect(() => { load(); }, []);
+  if (!data) return <div className="empty">Loading…</div>;
+
+  const copy = (label, text) => navigator.clipboard.writeText(text).then(() => { setCopied(label); setTimeout(() => setCopied(''), 1500); });
+  const Row = ({ label, url }) => (
+    <div style={{ marginBottom: 12 }}>
+      <div className="section-title" style={{ marginTop: 0 }}>{label}</div>
+      <div className="row spread">
+        <code style={{ display: 'block', background: '#f1f5f9', padding: '10px 12px', borderRadius: 8, fontSize: 12, wordBreak: 'break-all' }}>{url}</code>
+        <button className="btn sm" onClick={() => copy(label, url)}>{copied === label ? 'Copied!' : 'Copy'}</button>
+      </div>
+    </div>
+  );
+
+  if (data.locked) {
+    return (
+      <div className="card" style={{ maxWidth: 720 }}>
+        <div className="card-body" style={{ textAlign: 'center', padding: 32 }}>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>🔒 Lead integrations are a paid feature</div>
+          <p className="muted" style={{ marginTop: 0, marginBottom: 16 }}>
+            Connect WhatConverts, MarketingClarity and other lead trackers to auto-capture every call
+            and form as an attributed lead. This unlocks on a paid plan.
+          </p>
+          <Link to="/billing" className="btn primary">See plans</Link>
+        </div>
+      </div>
+    );
+  }
+
+  const saveWc = async () => {
+    setBusy('save'); setErr(''); setMsg('');
+    try {
+      await api('/integrations/whatconverts', { method: 'PUT', body: wc });
+      setWc((w) => ({ ...w, api_token: '', api_secret: '' }));
+      setMsg('WhatConverts API connected.');
+      load();
+    } catch (e) { setErr(e.message); } finally { setBusy(''); }
+  };
+  const syncWc = async () => {
+    setBusy('sync'); setErr(''); setMsg('');
+    try {
+      const r = await api('/integrations/whatconverts/sync', { method: 'POST' });
+      setMsg(`Synced ${r.fetched} leads — ${r.added} new, ${r.skipped} already imported.`);
+      load();
+    } catch (e) { setErr(e.message); } finally { setBusy(''); }
+  };
+  const disconnectWc = async () => {
+    if (!window.confirm('Disconnect the WhatConverts API? Webhooks will still work.')) return;
+    setBusy('disc'); setErr(''); setMsg('');
+    try { await api('/integrations/whatconverts', { method: 'DELETE' }); setMsg('Disconnected.'); load(); }
+    catch (e) { setErr(e.message); } finally { setBusy(''); }
+  };
+
+  return (
+    <div style={{ maxWidth: 760 }}>
+      {msg && <div className="card mt" style={{ borderColor: '#bbf7d0' }}><div className="card-body" style={{ color: '#16a34a', fontWeight: 600, padding: 12 }}>{msg}</div></div>}
+      {err && <div className="card mt"><div className="card-body error-text" style={{ margin: 0 }}>{err}</div></div>}
+
+      {/* WhatConverts */}
+      <div className="card">
+        <div className="card-head">📊 WhatConverts</div>
+        <div className="card-body">
+          <p className="muted" style={{ marginTop: 0 }}>
+            Track every call, form and chat with full marketing attribution, and have each one flow in as a
+            lead automatically — the same way SmartMoving connects to WhatConverts.
+          </p>
+          <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '10px 12px', fontSize: 13, marginBottom: 14 }}>
+            <b>Real-time (recommended):</b> in WhatConverts go to <b>Tracking → Integrations → Webhooks</b>,
+            add a webhook, and paste the URL below. Every new lead posts here instantly.
+          </div>
+          <Row label="Your WhatConverts webhook URL" url={data.webhooks.whatconverts} />
+
+          <div className="section-title">Or connect the API (scheduled sync + “Sync now”)</div>
+          {data.whatconverts.api_connected ? (
+            <div>
+              <div style={{ color: '#16a34a', fontWeight: 600, marginBottom: 6 }}>✓ API connected{data.whatconverts.last_sync ? ` · last sync ${new Date(data.whatconverts.last_sync).toLocaleString()}` : ''}</div>
+              {isAdmin && (
+                <div className="row" style={{ gap: 8 }}>
+                  <button className="btn primary sm" onClick={syncWc} disabled={busy === 'sync'}>{busy === 'sync' ? 'Syncing…' : 'Sync now'}</button>
+                  <button className="btn danger sm" onClick={disconnectWc} disabled={busy === 'disc'}>Disconnect</button>
+                </div>
+              )}
+            </div>
+          ) : isAdmin ? (
+            <div className="form-grid">
+              <Field label="API Token"><input value={wc.api_token} onChange={(e) => setWc({ ...wc, api_token: e.target.value })} placeholder="from WhatConverts → Profile → API Keys" /></Field>
+              <Field label="API Secret"><input value={wc.api_secret} onChange={(e) => setWc({ ...wc, api_secret: e.target.value })} type="password" /></Field>
+              <Field label="Profile ID (optional)"><input value={wc.profile_id} onChange={(e) => setWc({ ...wc, profile_id: e.target.value })} placeholder="limits sync to one profile" /></Field>
+              <div style={{ alignSelf: 'end', marginBottom: 12 }}>
+                <button className="btn primary" onClick={saveWc} disabled={busy === 'save' || !wc.api_token || !wc.api_secret}>{busy === 'save' ? 'Connecting…' : 'Connect API'}</button>
+              </div>
+            </div>
+          ) : <p className="muted">Ask an admin to connect the API.</p>}
+        </div>
+      </div>
+
+      {/* MarketingClarity */}
+      <div className="card mt">
+        <div className="card-head">🎯 MarketingClarity</div>
+        <div className="card-body">
+          <p className="muted" style={{ marginTop: 0 }}>
+            Send MarketingClarity leads straight into your pipeline. In MarketingClarity, add an outbound
+            webhook / lead-delivery destination and paste the URL below.
+          </p>
+          <Row label="Your MarketingClarity webhook URL" url={data.webhooks.marketingclarity} />
+        </div>
+      </div>
+
+      {/* Generic */}
+      <div className="card mt">
+        <div className="card-head">🔗 Any other provider (Zapier, landing pages…)</div>
+        <div className="card-body">
+          <p className="muted" style={{ marginTop: 0 }}>
+            POST JSON with at least <code>name</code> and <code>phone</code> or <code>email</code>. Add
+            <code> ?source=Name</code> to tag the lead source.
+          </p>
+          <Row label="Generic lead webhook URL" url={data.webhooks.generic} />
         </div>
       </div>
     </div>

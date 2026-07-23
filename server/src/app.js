@@ -21,6 +21,7 @@ import reviewRoutes from './routes/reviews.js';
 import subscriptionRoutes from './routes/subscription.js';
 import cronRoutes from './routes/cron.js';
 import importRoutes from './routes/imports.js';
+import integrationRoutes from './routes/integrations.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const app = express();
@@ -75,6 +76,7 @@ app.use('/api/websites', requireAuth, websiteRoutes);
 app.use('/api/reviews', requireAuth, reviewRoutes);
 app.use('/api/subscription', requireAuth, subscriptionRoutes);
 app.use('/api/import', requireAuth, importRoutes);
+app.use('/api/integrations', requireAuth, integrationRoutes);
 
 // Serve the built frontend when it exists (local/production single-server mode).
 const clientDist = path.join(__dirname, '..', '..', 'client', 'dist');

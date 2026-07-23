@@ -5,6 +5,7 @@
 //   - Twilio phone webhooks (inbound calls -> recorded + logged as leads)
 import { Router } from 'express';
 import { q, one, run, tx, nextNumber } from '../db.js';
+import { ingestLead, mapWhatConverts, mapGeneric } from '../integrations.js';
 
 const router = Router();
 
@@ -86,6 +87,39 @@ router.post('/lead/:key', async (req, res) => {
     res.status(500).json({ error: 'Could not submit your request. Please call us instead.' });
   }
 });
+
+// ---------------------------------------------------------------------------
+// Lead-tracking integrations (WhatConverts, MarketingClarity). Each company
+// pastes its unique webhook URL into the provider; every tracked call/form/chat
+// is POSTed here as JSON and becomes an attributed lead — the SmartMoving model.
+// Integrations require a paid plan (same as lead-capture websites).
+// ---------------------------------------------------------------------------
+async function orgForIntegration(key) {
+  const org = await orgByKey(key);
+  if (!org) return { code: 404 };
+  const plan = (await one('SELECT plan FROM organizations WHERE id = $1', [org.id]))?.plan;
+  if (plan === 'trial') return { code: 402 };
+  return { org };
+}
+
+function handleProviderWebhook(provider, mapFn) {
+  return async (req, res) => {
+    const { org, code } = await orgForIntegration(req.params.key);
+    if (code === 404) return res.status(404).json({ error: 'Unknown company link' });
+    if (code === 402) return res.status(402).json({ error: 'Lead integrations require a paid plan.' });
+    try {
+      const lead = mapFn(req.body || {});
+      const r = await tx((client) => ingestLead(client, org, provider, lead));
+      res.status(r.duplicate ? 200 : 201).json({ ok: true, duplicate: r.duplicate, reference: r.jobNumber });
+    } catch (e) {
+      console.error(`${provider} webhook failed:`, e);
+      res.status(e.status || 500).json({ error: e.message || 'Could not process lead' });
+    }
+  };
+}
+
+router.post('/whatconverts/:key', handleProviderWebhook('whatconverts', mapWhatConverts));
+router.post('/marketingclarity/:key', handleProviderWebhook('marketingclarity', (b) => mapGeneric(b, 'MarketingClarity')));
 
 // ---------------------------------------------------------------------------
 // Twilio voice webhooks. Point a Twilio number's "A call comes in" webhook at
