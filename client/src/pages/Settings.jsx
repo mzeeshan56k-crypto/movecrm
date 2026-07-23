@@ -158,7 +158,7 @@ function LeadCapture() {
           {websites.map((w) => {
             const formUrl = `${origin}/quote/${w.public_key}`;
             const apiUrl = `${origin}/api/public/lead/${w.public_key}`;
-            const embed = `<iframe src="${formUrl}" style="width:100%;height:760px;border:none;border-radius:12px"></iframe>`;
+            const embed = `<iframe src="${formUrl}?embed=1" title="Get a moving quote" loading="lazy" style="width:100%;max-width:560px;height:720px;border:none;border-radius:14px"></iframe>`;
             return (
               <div key={w.id} className="card" style={{ marginBottom: 12 }}>
                 <div className="card-head">{w.name}</div>

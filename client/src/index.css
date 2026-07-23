@@ -266,8 +266,12 @@ input:focus, select:focus, textarea:focus { outline: 2px solid rgba(37, 99, 235,
 @media (max-width: 760px) { .import-map-grid { grid-template-columns: 1fr; } }
 
 /* Public quote form (embeddable) */
-.quote-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--sidebar); padding: 24px 16px; }
-.quote-card { background: #fff; border-radius: 16px; width: 480px; max-width: 100%; padding: 28px; box-shadow: 0 18px 50px rgba(0,0,0,0.28); }
+.quote-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 16px;
+  background: radial-gradient(700px 340px at 50% -10%, rgba(99,102,241,0.14), transparent 60%), linear-gradient(180deg, #eef2ff 0%, #f6f8fc 55%, #f4f6fa 100%); }
+.quote-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; width: 460px; max-width: 100%; padding: 28px; box-shadow: 0 18px 50px rgba(15,23,42,0.10); }
+/* Embedded on a customer site: blend in, size to content, no page takeover. */
+.quote-page.embed { min-height: 0; padding: 0; background: transparent; display: block; }
+.quote-page.embed .quote-card { width: 100%; max-width: 100%; box-shadow: none; border-radius: 12px; }
 .quote-head { margin-bottom: 18px; }
 .quote-logo { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 17px; color: var(--primary); margin-bottom: 10px; }
 .quote-head h2 { font-size: 24px; font-weight: 800; }
@@ -279,8 +283,8 @@ input:focus, select:focus, textarea:focus { outline: 2px solid rgba(37, 99, 235,
 .quote-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
 .quote-card .field span { font-weight: 600; color: #334155; }
 .quote-card input, .quote-card select, .quote-card textarea { padding: 12px 13px; border-radius: 10px; font-size: 15px; }
-.quote-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; background: var(--primary); color: #fff; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 7px; margin-top: 6px; }
-.quote-btn:hover { background: var(--primary-dark); }
+.quote-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg, #2563eb, #6366f1); color: #fff; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 7px; margin-top: 6px; box-shadow: 0 8px 20px rgba(37,99,235,0.25); }
+.quote-btn:hover { filter: brightness(1.05); }
 .quote-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .quote-btn.ghost { background: #f1f5f9; color: var(--text); flex: 0 0 auto; width: auto; padding: 14px 18px; }
 .quote-btn.ghost:hover { background: #e2e8f0; }

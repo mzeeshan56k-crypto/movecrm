@@ -34,13 +34,42 @@ router.post('/lead/:key', async (req, res) => {
   const org = await orgByKey(req.params.key);
   if (!org) return res.status(404).json({ error: 'Unknown company link' });
   const b = req.body || {};
-  const firstName = (b.first_name || b.name || '').toString().trim();
-  if (!firstName) return res.status(400).json({ error: 'Name is required' });
-  if (!b.phone && !b.email) return res.status(400).json({ error: 'Phone or email is required' });
+  // Google Ads Lead Form delivers fields inside a user_column_data array rather
+  // than flat keys. Flatten it so Google Ads leads populate correctly.
+  if (Array.isArray(b.user_column_data)) {
+    for (const col of b.user_column_data) {
+      const id = String(col.column_id || col.column_name || '').toUpperCase();
+      const val = col.string_value ?? col.value ?? '';
+      if (!val) continue;
+      if (/FIRST/.test(id)) b.first_name = b.first_name || val;
+      else if (/LAST/.test(id)) b.last_name = b.last_name || val;
+      else if (/FULL.?NAME|^NAME$/.test(id)) b.name = b.name || val;
+      else if (/PHONE/.test(id)) b.phone = b.phone || val;
+      else if (/EMAIL/.test(id)) b.email = b.email || val;
+      else if (/CITY/.test(id)) b.origin_city = b.origin_city || val;
+      else if (/POSTAL|ZIP/.test(id)) b.origin_zip = b.origin_zip || val;
+    }
+  }
+  // Accept the field names different lead sources use (Google Ads, Facebook Lead
+  // Ads, Yelp, Zapier, call trackers, plain forms) so every source works without
+  // custom mapping.
+  const S = (v) => (v == null ? '' : String(v)).trim();
+  const fullName = S(b.name || b.full_name || b.contact_name || b.fullName);
+  const nameParts = fullName.split(/\s+/).filter(Boolean);
+  const firstName = S(b.first_name || b.firstName || b.fname || nameParts[0]) || 'Lead';
+  const lastName = S(b.last_name || b.lastName || b.lname || nameParts.slice(1).join(' '));
+  const phone = S(b.phone || b.phone_number || b.phoneNumber || b.caller_number || b.mobile || b.tel);
+  const email = S(b.email || b.email_address || b.emailAddress);
+  if (!phone && !email) return res.status(400).json({ error: 'A phone or email is required' });
+
+  const moveDate = S(b.move_date || b.moveDate || b.date) || null;
+  const moveSize = S(b.move_size || b.moveSize || b.size);
+  const jobType = S(b.type || b.move_type || b.moveType) || 'local';
+  const message = S(b.notes || b.message || b.comments || b.details) || null;
 
   // The lead source can come from the body or the ?source= query param, so each
-  // integration (Google Ads, Yelp, Facebook, Zapier…) gets a tagged webhook URL.
-  const sourceName = (b.source || req.query.source || 'Website Form').toString();
+  // integration (Google Ads, Yelp, Facebook, Zapier) gets a tagged webhook URL.
+  const sourceName = S(b.source || req.query.source || 'Website Form');
   try {
     const jobNumber = await tx(async (client) => {
       const source = (await client.query(
@@ -51,13 +80,13 @@ router.post('/lead/:key', async (req, res) => {
 
       const customer = (await client.query(
         'INSERT INTO customers (org_id, first_name, last_name, email, phone) VALUES ($1,$2,$3,$4,$5) RETURNING id',
-        [org.id, firstName, (b.last_name || '').toString(), b.email || null, b.phone || null]
+        [org.id, firstName, lastName, email || null, phone || null]
       )).rows[0];
 
       let moveSizeId = null;
-      if (b.move_size) {
+      if (moveSize) {
         const ms = (await client.query(
-          'SELECT id FROM move_sizes WHERE org_id = $1 AND name ILIKE $2 LIMIT 1', [org.id, `%${b.move_size}%`]
+          'SELECT id FROM move_sizes WHERE org_id = $1 AND name ILIKE $2 LIMIT 1', [org.id, `%${moveSize}%`]
         )).rows[0];
         moveSizeId = ms?.id || null;
       }
@@ -68,16 +97,15 @@ router.post('/lead/:key', async (req, res) => {
            origin_address, origin_city, origin_state, origin_zip,
            dest_address, dest_city, dest_state, dest_zip, lead_source_id, notes)
          VALUES ($1,$2,$3,'lead',$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING id`,
-        [org.id, number, customer.id, b.type || 'local', b.move_date || null, moveSizeId,
-         b.origin_address || null, b.origin_city || null, b.origin_state || null, b.origin_zip || null,
-         b.dest_address || null, b.dest_city || null, b.dest_state || null, b.dest_zip || null,
-         source.id, b.notes || b.message || null]
+        [org.id, number, customer.id, jobType, moveDate, moveSizeId,
+         S(b.origin_address) || null, S(b.origin_city) || null, S(b.origin_state) || null, S(b.origin_zip) || null,
+         S(b.dest_address) || null, S(b.dest_city) || null, S(b.dest_state) || null, S(b.dest_zip) || null,
+         source.id, message]
       )).rows[0];
 
       await client.query(
         'INSERT INTO activities (org_id, job_id, customer_id, type, subject, body) VALUES ($1,$2,$3,$4,$5,$6)',
-        [org.id, job.id, customer.id, 'system', `New inquiry via ${sourceName}`,
-         b.notes || b.message || '']
+        [org.id, job.id, customer.id, 'system', `New inquiry via ${sourceName}`, message || '']
       );
       return number;
     });
