@@ -14,6 +14,11 @@ const SERVICE_TYPES = [
 // visitors see. Submissions become leads in that company's CRM automatically.
 export default function PublicQuote() {
   const { publicKey } = useParams();
+  // When embedded on a company's website (?embed=1), the form drops its full-page
+  // background and sizes to its content so it blends into the host page instead
+  // of taking over the whole iframe.
+  const embed = new URLSearchParams(window.location.search).get('embed') === '1';
+  const pageClass = 'quote-page' + (embed ? ' embed' : '');
   const [org, setOrg] = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [done, setDone] = useState(null);
@@ -54,12 +59,12 @@ export default function PublicQuote() {
     }
   };
 
-  if (notFound) return <div className="quote-page"><div className="quote-card">This quote link is not valid.</div></div>;
-  if (!org) return <div className="quote-page"><div className="quote-card">Loading…</div></div>;
+  if (notFound) return <div className={pageClass}><div className="quote-card">This quote link is not valid.</div></div>;
+  if (!org) return <div className={pageClass}><div className="quote-card">Loading…</div></div>;
 
   if (done) {
     return (
-      <div className="quote-page">
+      <div className={pageClass}>
         <div className="quote-card" style={{ textAlign: 'center' }}>
           <CheckCircle size={52} color="#22c55e" style={{ margin: '0 auto 14px' }} />
           <h2 style={{ fontSize: 22 }}>Request received!</h2>
@@ -71,12 +76,12 @@ export default function PublicQuote() {
   }
 
   return (
-    <div className="quote-page">
+    <div className={pageClass}>
       <div className="quote-card">
         <div className="quote-head">
           <div className="quote-logo"><Truck size={24} /> {org.company_name}</div>
           <h2>Get a Free Estimate</h2>
-          <p>Get a customized moving quote with no obligation — request your free estimate today!</p>
+          <p>Get a customized moving quote with no obligation. Request your free estimate today.</p>
         </div>
 
         <div className="quote-steps">
