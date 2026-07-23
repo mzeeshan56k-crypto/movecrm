@@ -259,6 +259,18 @@ CREATE TABLE IF NOT EXISTS calls (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Dedupe ledger for inbound integration leads (WhatConverts, MarketingClarity,
+-- etc.) so webhook retries and API re-syncs never create duplicate leads.
+CREATE TABLE IF NOT EXISTS integration_leads (
+  id SERIAL PRIMARY KEY,
+  org_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  provider TEXT NOT NULL,
+  external_id TEXT NOT NULL,
+  job_id INTEGER REFERENCES jobs(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_integration_leads_uniq ON integration_leads(org_id, provider, external_id);
+
 CREATE INDEX IF NOT EXISTS idx_jobs_org_status ON jobs(org_id, status);
 CREATE INDEX IF NOT EXISTS idx_jobs_org_movedate ON jobs(org_id, move_date);
 CREATE INDEX IF NOT EXISTS idx_customers_org ON customers(org_id);

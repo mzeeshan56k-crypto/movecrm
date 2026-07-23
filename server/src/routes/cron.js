@@ -3,10 +3,17 @@
 // builds a summary, and emails it. Protected by CRON_SECRET (and Vercel's own
 // x-vercel-cron header). Email sending is via Resend and is optional.
 import { Router } from 'express';
-import { q, one } from '../db.js';
+import { q, one, tx } from '../db.js';
 import { sendEmail, emailConfigured } from '../email.js';
+import { fetchWhatConvertsLeads, ingestLead } from '../integrations.js';
 
 const router = Router();
+
+const cronAuthed = (req) => {
+  const secret = process.env.CRON_SECRET;
+  return !!(req.headers['x-vercel-cron'] ||
+    (secret && (req.query.key === secret || req.headers.authorization === `Bearer ${secret}`)));
+};
 
 const money = (n) => '$' + (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -39,11 +46,43 @@ async function buildReport(orgId, periodDays, label) {
   return { subject: `${org.name}: your ${label.toLowerCase()} business report`, html };
 }
 
+// Auto-pull leads from WhatConverts for every paid org that connected its API.
+// Webhooks are the primary path (real-time); this is a safety-net backfill.
+router.get('/integrations', async (req, res) => {
+  if (!cronAuthed(req)) return res.status(403).json({ error: 'Forbidden' });
+  const orgs = await q(`
+    SELECT o.id, o.name,
+      (SELECT value FROM settings WHERE org_id=o.id AND key='wc_api_token') AS token,
+      (SELECT value FROM settings WHERE org_id=o.id AND key='wc_api_secret') AS secret,
+      (SELECT value FROM settings WHERE org_id=o.id AND key='wc_profile_id') AS profile_id
+    FROM organizations o
+    WHERE o.plan <> 'trial'
+      AND EXISTS (SELECT 1 FROM settings WHERE org_id=o.id AND key='wc_api_token' AND value <> '')
+  `);
+  let added = 0, synced = 0;
+  for (const org of orgs) {
+    if (!org.token || !org.secret) continue;
+    try {
+      const leads = await fetchWhatConvertsLeads({ token: org.token, secret: org.secret, profileId: org.profile_id });
+      for (const lead of leads) {
+        const r = await tx((client) => ingestLead(client, org, 'whatconverts', lead));
+        if (!r.duplicate) added++;
+      }
+      await one(
+        `INSERT INTO settings (org_id, key, value) VALUES ($1, 'wc_last_sync', $2)
+         ON CONFLICT (org_id, key) DO UPDATE SET value = EXCLUDED.value RETURNING org_id`,
+        [org.id, new Date().toISOString()]
+      );
+      synced++;
+    } catch (e) {
+      console.error('WhatConverts cron sync failed for org', org.id, e.message);
+    }
+  }
+  res.json({ ok: true, orgs: orgs.length, synced, added });
+});
+
 router.get('/reports', async (req, res) => {
-  const secret = process.env.CRON_SECRET;
-  const authed = req.headers['x-vercel-cron'] ||
-    (secret && (req.query.key === secret || req.headers.authorization === `Bearer ${secret}`));
-  if (!authed) return res.status(403).json({ error: 'Forbidden' });
+  if (!cronAuthed(req)) return res.status(403).json({ error: 'Forbidden' });
 
   const now = new Date();
   const dow = now.getUTCDay(); // 0=Sun, 1=Mon
