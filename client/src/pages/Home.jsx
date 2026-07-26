@@ -7,6 +7,7 @@ import {
   CheckCircle2, MessageSquare, ShieldCheck,
 } from 'lucide-react';
 import PromoPopup from '../components/PromoPopup.jsx';
+import DashboardCarousel from '../components/DashboardCarousel.jsx';
 import { useSeo } from '../lib/seo.js';
 
 const CALENDLY = 'https://calendly.com/mzseoconsultant/30min';
@@ -41,6 +42,13 @@ const WHY = [
   { icon: Gauge, title: 'Guided setup, live fast', desc: 'After a short demo we set up your workspace, tariff and lead sources with you, so you can send your first quote the same day.' },
   { icon: Star, title: 'Reputation built in', desc: 'Finished jobs auto request reviews and route happy customers to Google, with no extra reputation tool to buy.' },
   { icon: Truck, title: 'Made for movers only', desc: 'Move sizes, cubic feet, crews, trucks, long distance versus local. The language and workflow of a moving company, not generic sales software.' },
+];
+
+const STEPS = [
+  { icon: PhoneCall, title: 'Capture the lead', desc: 'Website forms, tracked calls and lead providers all land in one pipeline, tagged with their source.' },
+  { icon: Calculator, title: 'Quote in minutes', desc: 'Build a line item estimate off your own tariff while the customer is still on the phone.' },
+  { icon: RouteIcon, title: 'Dispatch the crew', desc: 'Assign movers and trucks on a live day board that shows who is actually available.' },
+  { icon: Receipt, title: 'Invoice and get paid', desc: 'The finished job becomes an invoice, payments post against it, and a review request goes out.' },
 ];
 
 const DEMO_POINTS = [
@@ -166,6 +174,30 @@ export default function Home() {
               <div className="lp-stat-label">{s.label}</div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Product screens carousel */}
+      <DashboardCarousel />
+
+      {/* How it works */}
+      <section id="how" className="lp-section lp-how">
+        <div className="lp-container">
+          <div className="lp-section-head">
+            <span className="lp-eyebrow">How it works</span>
+            <h2>From first call to final invoice</h2>
+            <p>Four steps your team already follows, with the busywork removed.</p>
+          </div>
+          <div className="lp-steps">
+            {STEPS.map((s, i) => (
+              <div key={s.title} className="lp-step">
+                <div className="lp-step-num">{String(i + 1).padStart(2, '0')}</div>
+                <div className="lp-step-ic"><s.icon size={19} /></div>
+                <h3>{s.title}</h3>
+                <p>{s.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

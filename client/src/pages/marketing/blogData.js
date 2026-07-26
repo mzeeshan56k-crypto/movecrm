@@ -1,8 +1,11 @@
 // SEO blog content for Movers CRM. Commercial and transactional intent, brand
 // embedded, no emojis, no em dashes, concise sentences. Bodies are trusted
 // in-house HTML rendered into the styled article container.
+import { ALTERNATIVE_POSTS } from './postsAlternatives.js';
+import { SOLUTION_POSTS } from './postsSolutions.js';
+import { GROWTH_POSTS } from './postsGrowth.js';
 
-export const POSTS = [
+const CORE_POSTS = [
   {
     slug: 'smartmoving-alternative',
     title: 'SmartMoving Alternative: Movers CRM at About Half the Cost',
@@ -10,6 +13,16 @@ export const POSTS = [
     date: '2026-07-21',
     read: 6,
     keyword: 'SmartMoving alternative',
+    author: 'Movers CRM Team',
+    updated: '2026-07-23',
+    tldr: 'Movers CRM is a SmartMoving alternative for small and midsize moving companies. It covers pipeline, estimating, dispatch, invoicing and reviews in one app at about half the cost. SmartMoving pricing has been reported around 299 to 399 dollars per month.',
+    faqs: [
+      { q: 'What is the best SmartMoving alternative?', a: 'For small and midsize movers, Movers CRM is the strongest value alternative because it covers the same daily workflow at a lower cost. Larger operators with complex storage may prefer another enterprise platform.' },
+      { q: 'How much does SmartMoving cost?', a: 'SmartMoving pricing has been publicly reported at roughly 299 to 399 dollars per month, often on per user terms. Confirm current pricing directly, since vendors update plans regularly.' },
+      { q: 'Can I move my data from SmartMoving?', a: 'Yes. Export your customers and jobs to a CSV file and import them into Movers CRM in one step. Your tariff, lead sources and user logins are configured on a setup call.' },
+      { q: 'Will I lose features by switching?', a: 'Not for everyday operations. Movers CRM includes pipeline, estimating, dispatch, invoicing, payments, reviews and reporting. Very large operators needing deep storage or documentation modules should check feature parity first.' },
+      { q: 'How long does switching take?', a: 'Most moving companies are running within a few days because onboarding is done with you. Plan the change between busy seasons rather than during a peak week.' },
+    ],
     body: `
 <p>SmartMoving is a capable platform, but many moving companies find the pricing built for large operators rather than the growing crew doing the daily moves. When the monthly cost climbs faster than the number of jobs, owners start looking for moving company software that delivers the same results without the enterprise price tag. That is exactly where Movers CRM fits, and this guide explains why it is a strong SmartMoving alternative.</p>
 
@@ -57,6 +70,16 @@ export const POSTS = [
     date: '2026-07-19',
     read: 6,
     keyword: 'best CRM for moving companies',
+    author: 'Movers CRM Team',
+    updated: '2026-07-23',
+    tldr: 'The best CRM for moving companies handles move sizes, crews, trucks and job types out of the box, and puts pipeline, estimating, dispatch, billing and reviews under one login. Movers CRM delivers that full workflow at about half the cost of the established platforms.',
+    faqs: [
+      { q: 'What is the best CRM for a moving company?', a: 'The best choice is a moving specific CRM that covers pipeline, estimating, dispatch, invoicing and reviews in one app. Movers CRM fits small and midsize movers because it includes all of that at an affordable price.' },
+      { q: 'Can I use a generic CRM instead?', a: 'You can, but generic CRMs do not understand move sizes, cubic feet, crews or trucks. You end up building those workflows yourself, which costs more time than the software saves.' },
+      { q: 'What features matter most?', a: 'A fast sales pipeline, quick line item estimating, real time dispatch, built in invoicing and automatic review requests. Those five decide whether the software pays for itself.' },
+      { q: 'How much does a moving CRM cost?', a: 'Most dedicated platforms run between 99 and 399 dollars per month. Judge the cost against the revenue protected, since one or two extra booked moves usually covers the subscription.' },
+      { q: 'How quickly can a moving company get started?', a: 'With guided onboarding and CSV import, most companies are live within a few days. Ask any vendor who imports your data before you sign.' },
+    ],
     body: `
 <p>The best CRM for moving companies is not the one with the longest feature list. It is the one your team actually uses every day, that turns more inquiries into booked moves, and that pays for itself quickly. A moving business runs on fast quotes, tight dispatch and clean billing, so the right CRM has to handle move sizes, cubic feet, crews, trucks and long distance versus local out of the box. This guide covers what to look for and why growing movers pick Movers CRM.</p>
 
@@ -102,6 +125,16 @@ export const POSTS = [
     date: '2026-07-14',
     read: 6,
     keyword: 'moving company CRM pricing',
+    author: 'Movers CRM Team',
+    updated: '2026-07-23',
+    tldr: 'Moving company CRM software generally costs between 99 and 399 dollars per month. The pricing model matters more than the headline figure, because per user plans grow with headcount while flat plans stay predictable. Movers CRM keeps the total lower with setup included.',
+    faqs: [
+      { q: 'How much does moving company CRM software cost?', a: 'Most dedicated platforms fall between 99 and 399 dollars per month. Reported figures include MoveitPro from about 99 dollars per user, Elromco from about 289 dollars flat, and SmartMoving around 299 dollars.' },
+      { q: 'Is per user or flat pricing better?', a: 'Flat pricing is better once you have several staff who each need a login, since per user plans multiply as you hire. Per user plans can be cheaper for a one or two person office.' },
+      { q: 'What hidden costs should I ask about?', a: 'Ask about setup fees, data migration charges, per seat costs and add ons for call tracking or analytics. These can double a low headline price.' },
+      { q: 'Is a moving CRM worth the money?', a: 'It usually is if it stops leads slipping through. Closing one or two additional moves a month typically covers the subscription several times over.' },
+      { q: 'Do I have to sign an annual contract?', a: 'Some enterprise platforms require annual terms. Movers CRM does not lock you into a long contract, so check contract length before you commit to any vendor.' },
+    ],
     body: `
 <p>Pricing is often the first question movers ask about CRM software, and the answer is rarely simple. Costs range widely depending on features, company size and contract terms. This guide breaks down what drives the price of a moving company CRM, what you should expect to pay, and how Movers CRM keeps the total affordable.</p>
 
@@ -142,6 +175,16 @@ export const POSTS = [
     date: '2026-07-16',
     read: 6,
     keyword: 'moving company software',
+    author: 'Movers CRM Team',
+    updated: '2026-07-23',
+    tldr: 'The moving company software features that book more moves are a fast sales pipeline, quick estimating, real time dispatch, built in invoicing and payments, automatic review gathering, strong lead capture and clear reporting. Movers CRM includes all of them in one app.',
+    faqs: [
+      { q: 'What features should moving company software have?', a: 'At minimum a sales pipeline, estimating, dispatch, invoicing and payments. Review gathering, lead capture and lead source reporting turn it from a record keeper into a growth tool.' },
+      { q: 'Which feature has the biggest impact on revenue?', a: 'Fast estimating combined with a visible pipeline. Moving customers often book whoever sends an accurate quote first, so speed converts more of the leads you already have.' },
+      { q: 'Do I need call tracking?', a: 'Most movers benefit from it, because a large share of moving leads arrive by phone. Call tracking attributes those calls to the marketing channel that produced them.' },
+      { q: 'Should dispatch be part of the same software?', a: 'Yes. Separate dispatch tools force someone to re enter each job, which is where wrong addresses and shifted dates come from.' },
+      { q: 'Does moving software replace accounting software?', a: 'No. It handles job billing and payment tracking, while your accountant or accounting package still covers taxes, payroll and financial statements.' },
+    ],
     body: `
 <p>Moving company software promises a lot, but only a handful of features actually move the needle on revenue. If you are evaluating tools, it helps to know which capabilities book more moves and which are just nice to have. This guide covers the features that matter most, and how Movers CRM delivers them in one place.</p>
 
@@ -181,6 +224,16 @@ export const POSTS = [
     date: '2026-07-18',
     read: 5,
     keyword: 'best CRM for small moving company',
+    author: 'Movers CRM Team',
+    updated: '2026-07-23',
+    tldr: 'The best CRM for a small moving company is affordable, simple to run without a full time admin, all in one, and quick to set up. Movers CRM was built for small and midsize movers, so it delivers the full workflow without enterprise pricing or complexity.',
+    faqs: [
+      { q: 'What is the best CRM for a small moving company?', a: 'One that is affordable, simple and all in one. Movers CRM suits small movers because the full toolkit is included, the interface is learnable in an afternoon, and there is no long contract.' },
+      { q: 'Do small movers really need a CRM?', a: 'Once you pass about two moves a day, yes. Spreadsheets and whiteboards stop showing live availability, which is when double bookings and missed follow ups start costing real money.' },
+      { q: 'How much should a small moving company spend?', a: 'Keep it proportional to your bookings. Small movers usually do better with a lower entry cost plan than with an enterprise platform priced for large operators.' },
+      { q: 'Will the software still work as I grow?', a: 'It should. Movers CRM scales as you add crews, trucks and staff, so you are not forced to migrate again the moment you expand.' },
+      { q: 'How long does setup take for a small team?', a: 'Usually a few days. Onboarding is done with you on a call, and existing customers and jobs import from a CSV file in one step.' },
+    ],
     body: `
 <p>Small moving companies have different needs than large operators. You need software that is affordable, easy to run, and quick to set up, without a heavy contract or a steep learning curve. This guide covers what to look for in a CRM for a small moving company, and why Movers CRM is built to fit.</p>
 
@@ -214,6 +267,16 @@ export const POSTS = [
     date: '2026-07-20',
     read: 6,
     keyword: 'moving company lead management',
+    author: 'Movers CRM Team',
+    updated: '2026-07-23',
+    tldr: 'Lead management for moving companies means capturing every inquiry in one place, responding within minutes, quoting fast, following up on a schedule, tracking each lead source, and turning completed jobs into reviews. Movers CRM automates that loop end to end.',
+    faqs: [
+      { q: 'What is lead management for a moving company?', a: 'It is the process of capturing every inquiry in one system, responding quickly, quoting, following up and tracking the source. Done well, it converts more of the leads you already pay for.' },
+      { q: 'How fast should you respond to a moving lead?', a: 'Within minutes. Moving customers typically contact several companies at once, and the first mover to give a real answer usually books the job.' },
+      { q: 'Why do moving companies lose leads?', a: 'Most often because a quote went out with no follow up date attached. Bookings usually happen after the first conversation, so quotes without a reminder quietly go cold.' },
+      { q: 'How do you track where leads come from?', a: 'Tag every lead with its source at capture, then compare booked jobs rather than inquiry counts. That tells you the real cost per booked job for each channel.' },
+      { q: 'Can lead capture be automated?', a: 'Yes. A website quote form, an embeddable widget, webhooks from ad platforms and call tracking can all create leads automatically, tagged with their marketing source.' },
+    ],
     body: `
 <p>Most moving companies do not have a lead problem, they have a lead management problem. Inquiries come in from the website, the phone and lead providers, then get lost in inboxes and notebooks before anyone follows up. This guide lays out a simple lead management process for movers, and shows how Movers CRM automates it so no lead slips away.</p>
 
@@ -249,5 +312,9 @@ export const POSTS = [
 `,
   },
 ];
+
+// The full library: pillar and cluster posts, newest first by publish date.
+export const POSTS = [...CORE_POSTS, ...ALTERNATIVE_POSTS, ...SOLUTION_POSTS, ...GROWTH_POSTS]
+  .sort((a, b) => new Date(b.date) - new Date(a.date));
 
 export const getPost = (slug) => POSTS.find((p) => p.slug === slug);

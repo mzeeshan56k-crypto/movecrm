@@ -17,39 +17,83 @@ export default function BlogPost() {
     path: `/blog/${post.slug}`,
   } : {});
 
-  // Inject Article structured data for rich results; remove on unmount.
+  // Structured data for rich results and AI answer engines: BlogPosting always,
+  // plus FAQPage when the article carries a real question and answer section.
   useEffect(() => {
     if (!post) return;
-    const ld = document.createElement('script');
-    ld.type = 'application/ld+json';
-    ld.textContent = JSON.stringify({
+    const blocks = [{
       '@context': 'https://schema.org',
       '@type': 'BlogPosting',
       headline: post.title,
       description: post.description,
       datePublished: post.date,
-      dateModified: post.date,
-      author: { '@type': 'Organization', name: 'Movers CRM' },
+      dateModified: post.updated || post.date,
+      author: { '@type': 'Organization', name: post.author || 'Movers CRM' },
       publisher: { '@type': 'Organization', name: 'Movers CRM' },
       mainEntityOfPage: `${SITE}/blog/${post.slug}`,
       keywords: post.keyword,
+    }];
+    if (post.faqs?.length) {
+      blocks.push({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: post.faqs.map((f) => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
+        })),
+      });
+    }
+    const nodes = blocks.map((b) => {
+      const el = document.createElement('script');
+      el.type = 'application/ld+json';
+      el.textContent = JSON.stringify(b);
+      document.head.appendChild(el);
+      return el;
     });
-    document.head.appendChild(ld);
-    return () => { document.head.removeChild(ld); };
+    return () => { nodes.forEach((n) => document.head.removeChild(n)); };
   }, [post]);
 
   if (!post) return <Navigate to="/blog" replace />;
 
-  const related = POSTS.filter((p) => p.slug !== post.slug).slice(0, 3);
+  // Related reading: prefer posts this one already links to contextually.
+  const linked = POSTS.filter((p) => p.slug !== post.slug && post.body.includes(`/blog/${p.slug}`));
+  const related = [...linked, ...POSTS.filter((p) => p.slug !== post.slug && !linked.includes(p))].slice(0, 3);
 
   return (
     <MarketingLayout>
       <article className="lp-section blog-post">
         <div className="lp-container blog-post-inner">
           <Link to="/blog" className="blog-back"><ArrowLeft size={15} /> All guides</Link>
-          <div className="blog-meta">{fmt(post.date)} · {post.read} min read</div>
+          <div className="blog-meta">
+            {fmt(post.date)} · {post.read} min read
+            {post.author ? ` · By ${post.author}` : ''}
+          </div>
           <h1>{post.title}</h1>
+          {post.updated && post.updated !== post.date && (
+            <div className="blog-updated">Last updated {fmt(post.updated)}</div>
+          )}
+
+          {post.tldr && (
+            <div className="blog-tldr">
+              <span className="blog-tldr-label">Summary</span>
+              <p>{post.tldr}</p>
+            </div>
+          )}
+
           <div className="blog-content" dangerouslySetInnerHTML={{ __html: post.body }} />
+
+          {post.faqs?.length > 0 && (
+            <section className="blog-faq">
+              <h2>Frequently asked questions</h2>
+              {post.faqs.map((f) => (
+                <div key={f.q} className="blog-faq-item">
+                  <h3>{f.q}</h3>
+                  <p>{f.a}</p>
+                </div>
+              ))}
+            </section>
+          )}
 
           <div className="mkt-cta-band">
             <h2>See Movers CRM for your moving company</h2>
@@ -60,7 +104,7 @@ export default function BlogPost() {
           </div>
 
           <div className="blog-related">
-            <h3>More guides</h3>
+            <h3>Related guides</h3>
             <ul>
               {related.map((p) => (
                 <li key={p.slug}><Link to={`/blog/${p.slug}`}>{p.title}</Link></li>
