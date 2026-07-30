@@ -4,6 +4,7 @@
 import { ALTERNATIVE_POSTS } from './postsAlternatives.js';
 import { SOLUTION_POSTS } from './postsSolutions.js';
 import { GROWTH_POSTS } from './postsGrowth.js';
+import { COMPARE_POSTS } from './postsCompare.js';
 
 const CORE_POSTS = [
   {
@@ -314,7 +315,7 @@ const CORE_POSTS = [
 ];
 
 // The full library: pillar and cluster posts, newest first by publish date.
-export const POSTS = [...CORE_POSTS, ...ALTERNATIVE_POSTS, ...SOLUTION_POSTS, ...GROWTH_POSTS]
+export const POSTS = [...CORE_POSTS, ...ALTERNATIVE_POSTS, ...SOLUTION_POSTS, ...GROWTH_POSTS, ...COMPARE_POSTS]
   .sort((a, b) => new Date(b.date) - new Date(a.date));
 
 export const getPost = (slug) => POSTS.find((p) => p.slug === slug);

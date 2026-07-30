@@ -44,6 +44,56 @@ const WHY = [
   { icon: Truck, title: 'Made for movers only', desc: 'Move sizes, cubic feet, crews, trucks, long distance versus local. The language and workflow of a moving company, not generic sales software.' },
 ];
 
+// Competitor figures are publicly reported ranges, used for honest positioning.
+const COMPARE_ROWS = [
+  ['Entry price per month', 'From $100', '$99 to $399 depending on vendor'],
+  ['Pricing visibility', 'Published on this page', 'Often demo required first'],
+  ['Built for', 'Small and midsize movers', 'Mostly larger operators'],
+  ['Team logins', 'Included in your plan', 'Frequently charged per user'],
+  ['Lead capture and call tracking', 'Included', 'Usually an add on'],
+  ['Review gathering', 'Built in and automatic', 'Often a separate tool'],
+  ['Onboarding', 'Done with you on a call', 'Self serve or paid'],
+  ['Contract', 'No long lock in', 'Annual terms are common'],
+];
+
+const BETTER = [
+  {
+    icon: Wallet,
+    title: 'You pay for movers, not enterprise overhead',
+    desc: 'Dedicated moving platforms are publicly reported between roughly 99 and 399 dollars per month, and the well known names sit near the top of that range. Movers CRM starts at 100 dollars because it was built lean for companies running one to ten trucks, not for national operators with an implementation team.',
+  },
+  {
+    icon: Layers,
+    title: 'One system instead of a stack held together by hope',
+    desc: 'Most moving companies run a spreadsheet for leads, a separate estimator, a whiteboard for dispatch and a fourth tool for invoicing. Every handoff between them is a chance to lose a lead or double book a crew. Movers CRM keeps the whole job in one record from first call to final payment.',
+  },
+  {
+    icon: Gauge,
+    title: 'Your team can quote before the customer hangs up',
+    desc: 'Moving customers call several companies at once and often book whoever gives them a real number first. Estimating in Movers CRM runs off your own tariff and totals itself, so a salesperson can price a three bedroom move while the customer is still on the phone.',
+  },
+  {
+    icon: Plug,
+    title: 'Logins are not a line item',
+    desc: 'Per user pricing quietly punishes growth. Teams start sharing accounts to keep the bill down, and shared logins destroy your reporting because nobody can tell which salesperson booked which job. Movers CRM includes your team, so everyone gets their own login and your numbers stay honest.',
+  },
+];
+
+const PRICING = [
+  {
+    name: 'Starter', price: '$100', unit: '/mo', blurb: 'For a single moving company',
+    features: ['Full pipeline, jobs and dispatch', 'Estimating, invoicing and payments', 'Automatic review gathering', '1 lead capture website'],
+  },
+  {
+    name: 'Growth', price: '$200', unit: '/mo', blurb: 'For multi location operators', featured: true,
+    features: ['Everything in Starter', 'Up to 5 lead capture websites', 'Advanced analytics and comparisons', 'Call recording and integrations'],
+  },
+  {
+    name: 'Pro', price: '$400', unit: '/mo', blurb: 'For large multi brand movers',
+    features: ['Everything in Growth', 'Up to 15 lead capture websites', 'Dedicated onboarding', 'Priority support'],
+  },
+];
+
 const STEPS = [
   { icon: PhoneCall, title: 'Capture the lead', desc: 'Website forms, tracked calls and lead providers all land in one pipeline, tagged with their source.' },
   { icon: Calculator, title: 'Quote in minutes', desc: 'Build a line item estimate off your own tariff while the customer is still on the phone.' },
@@ -96,7 +146,8 @@ export default function Home() {
           <Link to="/" className="lp-brand"><Truck size={24} /> Movers CRM</Link>
           <nav className="lp-nav-links">
             <a href="#features">Features</a>
-            <a href="#faq">FAQ</a>
+            <a href="#better">Why us</a>
+            <a href="#pricing">Pricing</a>
             <Link to="/blog">Blog</Link>
             <Link to="/login">Sign in</Link>
             <a href={CALENDLY} target="_blank" rel="noreferrer" className="btn primary lp-nav-cta">Book a demo</a>
@@ -243,6 +294,118 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Why better than other CRMs */}
+      <section id="better" className="lp-section">
+        <div className="lp-container">
+          <div className="lp-section-head">
+            <span className="lp-eyebrow">The honest comparison</span>
+            <h2>Why our CRM is better than other moving CRMs</h2>
+            <p>Not because the feature list is longer. Because the price fits a real moving company and the whole job lives in one place.</p>
+          </div>
+
+          <div className="lp-prose">
+            <p>
+              Moving company software is a crowded market, and most of it is genuinely capable. The problem
+              is fit. The established platforms were designed for national operators with dedicated
+              dispatchers, full office teams and an implementation budget. When a company running four
+              trucks buys that kind of system, it pays enterprise rates for modules it will never open and
+              waits weeks to go live.
+            </p>
+            <p>
+              Movers CRM takes the opposite approach. It covers the work that actually fills your calendar
+              and your bank account, then stops. You get the sales pipeline, estimating, dispatch,
+              invoicing, payments, reviews and reporting that a moving company touches every single day,
+              at a price that still makes sense when bookings are slow in February.
+            </p>
+          </div>
+
+          <div className="lp-better-grid">
+            {BETTER.map((b) => (
+              <div key={b.title} className="lp-better">
+                <div className="lp-better-ic"><b.icon size={20} /></div>
+                <div>
+                  <h3>{b.title}</h3>
+                  <p>{b.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="lp-compare">
+            <h3>Movers CRM compared to typical moving platforms</h3>
+            <div className="lp-table-wrap">
+              <table className="lp-table">
+                <thead>
+                  <tr><th>What you are comparing</th><th>Movers CRM</th><th>Typical moving platform</th></tr>
+                </thead>
+                <tbody>
+                  {COMPARE_ROWS.map(([label, us, them]) => (
+                    <tr key={label}>
+                      <td>{label}</td>
+                      <td className="lp-td-us"><Check size={15} /> {us}</td>
+                      <td className="lp-td-them">{them}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="lp-table-note">
+              Competitor figures reflect publicly reported pricing across the moving software market and
+              change over time. Always confirm current terms directly with each vendor.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="lp-section lp-section-alt">
+        <div className="lp-container">
+          <div className="lp-section-head">
+            <span className="lp-eyebrow">Pricing</span>
+            <h2>Pricing built against what the market actually charges</h2>
+            <p>Published plans, no per user surprises, and no annual lock in.</p>
+          </div>
+
+          <div className="lp-prose">
+            <p>
+              Here is the context most vendors leave out. Publicly reported pricing across dedicated moving
+              platforms runs from about 99 dollars per month at the entry level to roughly 399 dollars per
+              month for the better known names, and several of them price per user so the bill grows every
+              time you hire. At least one major platform does not publish pricing at all, which means a
+              sales call before you can even compare.
+            </p>
+            <p>
+              Movers CRM starts at 100 dollars per month with your team included. For most small and
+              midsize movers that lands at roughly half of what a comparable platform costs once seats are
+              counted. You can see the numbers below without talking to anyone first.
+            </p>
+          </div>
+
+          <div className="lp-pricing-grid">
+            {PRICING.map((p) => (
+              <div key={p.name} className={'lp-plan' + (p.featured ? ' featured' : '')}>
+                {p.featured && <span className="lp-plan-tag">Most popular</span>}
+                <h3>{p.name}</h3>
+                <div className="lp-plan-price">{p.price}<span>{p.unit}</span></div>
+                <div className="lp-plan-blurb">{p.blurb}</div>
+                <ul>
+                  {p.features.map((f) => <li key={f}><Check size={15} /> {f}</li>)}
+                </ul>
+                <a href={CALENDLY} target="_blank" rel="noreferrer" className={'btn lp-btn-lg ' + (p.featured ? 'primary' : '')} style={{ width: '100%', justifyContent: 'center' }}>
+                  Book a demo
+                </a>
+              </div>
+            ))}
+          </div>
+
+          <p className="lp-pricing-note">
+            Every plan includes the complete workflow. There is no stripped down tier that forces an
+            upgrade in month two. Running multiple locations or need something custom?{' '}
+            <a href={CALENDLY} target="_blank" rel="noreferrer">Talk to us about Enterprise</a>.
+          </p>
+        </div>
+      </section>
+
       {/* Our Story */}
       <section id="story" className="lp-section">
         <div className="lp-container lp-story">
@@ -358,6 +521,8 @@ export default function Home() {
           <div className="lp-brand"><Truck size={20} /> Movers CRM</div>
           <div className="lp-footer-links">
             <a href="#features">Features</a>
+            <a href="#better">Why us</a>
+            <a href="#pricing">Pricing</a>
             <a href="#faq">FAQ</a>
             <Link to="/blog">Blog</Link>
             <a href={CALENDLY} target="_blank" rel="noreferrer">Book a demo</a>
